@@ -216,7 +216,7 @@
 ---
 ## 2. 현재 개발 단계
 
-- 상태: **Phase 7 완료 → 구조 안정화 단계 진입**
+- 상태: **Phase 8 진행 중 (PostgreSQL 전환 완료 / Redis 도입 대기)**
 
   - Phase 5 완료: End-to-End 인터뷰 실행 아키텍처 통합 구현 완료 (TASK-021)
     - 세션 엔진 통합
@@ -307,10 +307,25 @@
 📌 **현재 기준선**
 - Phase 5 핵심 계약 고정 (Freeze / Snapshot / State Contract)
 - Phase 6 서비스/외부 경계 고정
-- Phase 7 질문 자산 및 RAG Fallback 구조 안정화 완료
-- Engine 정책 단일화 구조 확정
-- 구조 계약 위반 방지 가드레일 확보
-- Always-On 인터뷰 흐름 보장
+- Phase 7 (질문은행 및 RAG 통합) 진입 준비 완료
+
+- `packages/imh_core/infra/` (PostgreSQL): ✅ DONE
+  - TASK-026: PostgreSQL 도입 완료
+    - `PostgreSQLSessionRepository`, `PostgreSQLJobRepository`, `PostgreSQLHistoryRepository` 구현
+    - **Write Path Switch 완료**: `WRITE_PATH_PRIMARY=POSTGRES`
+    - **Dual Write 유지**: Memory Repository는 Secondary Write 및 Rollback Safety용으로 유지
+    - 기존 데이터(Session/Report) 마이그레이션 완료
+    - Restart Replay / Rollback Capability 검증 완료
+
+📌 **현재 기준선 (Phase 8)**
+- **Primary Data Store**: PostgreSQL (Read/Write)
+- **Secondary**: Memory (Dual Write / Failover)
+- **Operating Mode**:
+  - Read: PostgreSQL (Canary 100%)
+  - Write: PostgreSQL (Primary) + Memory (Secondary)
+- **Dual Write Strategy**:
+  - TASK-027 (Redis) 도입 및 안정화 시점까지 유지
+  - 목적: Hot Swap Rollback Safety 보장
 
 ---
 
@@ -336,13 +351,12 @@
 
 ---
 
-### 현재 Phase의 목적 (구조 안정화 단계 목표)
+### 현재 Phase의 목적 (Phase 8: DB 전환 및 고도화)
 
-- RAG Fallback 구조의 운영 안정성 강화
-- Snapshot 메타데이터 통제 전략 확정
-- Phase 8 영속화 전환 대비 구조 점검
-- Engine 단일 정책 구조 유지
-- 확장 시 계약 붕괴 방지 구조 강화
+- **PostgreSQL 전환(완료)**: 파일 기반 저장소 한계 극복, 트랜잭션 안전성 확보
+- **Redis 도입(예정)**: 실시간 세션 상태 관리 분리 (TASK-027)
+- **Snapshot 영속화**: JSONB 기반 유연성 + RDB 무결성 결합 전략 안착
+- **Dual Write 제거**: Redis 도입 후 최종 아키텍처 완성 시점 결정
 
 
 ## 3. 확정된 핵심 방향 (변경 금지)

@@ -12,7 +12,16 @@ class IMHConfig(BaseSettings):
     
     # 예시: 필수 환경 변수가 있다면 여기에 정의 (Optional이 아니면 에러 발생)
     # OPENAI_API_KEY: str 
+    
+    # Checkpoint 3/4: PostgreSQL Connection String
+    POSTGRES_CONNECTION_STRING: str = None 
+    
+    # Checkpoint 4: Canary Rollout
+    CANARY_ROLLOUT_PERCENTAGE: int = 1 
 
+    # Stage 3: Write Path Switch
+    WRITE_PATH_PRIMARY: str = "MEMORY" # MEMORY or POSTGRES
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

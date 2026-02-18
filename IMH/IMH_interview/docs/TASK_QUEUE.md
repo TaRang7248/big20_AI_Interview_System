@@ -342,7 +342,6 @@
 - **Verification**: `python scripts/verify_task_025.py` Pass
 
 ---
-## ACTIVE
 
 ### TASK-026 PostgreSQL 도입 (공고/세션/평가 영속화)
 - **Goal**:
@@ -350,26 +349,33 @@
 - **Scope**:
   - users / job_postings / interviews / evaluations 스키마 적용
   - 파일 기반 저장소 교체
+  - **Write Path Switch** (Memory -> PostgreSQL)
+  - **Dual Write Strategy** 수립 및 검증
 - **Out of Scope**:
   - 인프라 배포 자동화
+- **Verification**: `stage3_execution_report.md` (Stage 3 Execution)
 - **Dependencies**:
   - Phase 7 완료
   - 데이터 아키텍처 설계 문서(예: docs/26.02.05(목)데이터 아키텍쳐,ERD 가이드.md)
 
-## BACKLOG
+---
+
+## ACTIVE
 
 ### TASK-027 Redis 세션 상태 도입
 - **Goal**:
-  - 실시간 세션 상태 및 락 관리를 안정화한다.
+  - 실시간 세션 상태 및 락 관리를 안정화하고, Dual Write 제거 조건을 충족한다.
 - **Scope**:
-  - IN_PROGRESS 세션 상태 관리
-  - 중복 요청 방지
-  - 세션 타임아웃 관리
+  - `RedisSessionRepository` 구현 (Hot State)
+  - `ConcurrencyManager` Redis 분산 락 전환
+  - 세션 타임아웃(TTL) 관리
+- **Dual Write Removal Condition**:
+  - Redis 도입 후 Postgres-only 모드에서의 안정성 검증 완료 시 제거 승인
 - **Out of Scope**:
   - 클러스터링/고가용성 구성
 - **Dependencies**:
-  - TASK-017 세션 엔진 완료
   - TASK-026 (PostgreSQL) 완료
+
 
 ---
 

@@ -2,6 +2,7 @@ from typing import List, Optional
 from packages.imh_session.repository import SessionStateRepository
 from packages.imh_service.mapper import SessionMapper
 from packages.imh_dto.session import SessionListDTO, SessionResponseDTO
+from packages.imh_service.shadow_reader import ShadowReader
 
 class AdminQueryService:
     """
@@ -9,9 +10,15 @@ class AdminQueryService:
     Bypasses Domain Logic and Concurrency Control.
     Directly accesses Repository for reading state snapshots.
     """
-    def __init__(self, repository: SessionStateRepository, job_repo: "JobPostingRepository" = None):
+    def __init__(
+        self, 
+        repository: SessionStateRepository, 
+        job_repo: "JobPostingRepository" = None,
+        postgres_repo: Optional[SessionStateRepository] = None
+    ):
         self.repository = repository
         self.job_repo = job_repo
+        self.postgres_repo = postgres_repo
 
     def get_all_jobs(self) -> List[dict]:
         """
@@ -42,6 +49,15 @@ class AdminQueryService:
         # Let's use 'find_by_job_id("ALL")' as a placeholder pattern.
         all_sessions = self.repository.find_by_job_id("ALL") 
         
+        # Shadow Read
+        if self.postgres_repo:
+            ShadowReader.compare(
+                primary_result=all_sessions,
+                shadow_func=lambda: self.postgres_repo.find_by_job_id("ALL"),
+                entity_name="SessionList",
+                entity_id="ALL"
+            )
+
         # Simple slicing for pagination simulation
         paginated_sessions = all_sessions[offset:offset+limit]
         
@@ -52,6 +68,16 @@ class AdminQueryService:
         Retrieves detailed session info.
         """
         session = self.repository.get_state(session_id)
+        
+        # Shadow Read
+        if self.postgres_repo:
+            ShadowReader.compare(
+                primary_result=session,
+                shadow_func=lambda: self.postgres_repo.get_state(session_id),
+                entity_name="Session",
+                entity_id=session_id
+            )
+
         if not session:
             return None
         return SessionMapper.to_dto(session)

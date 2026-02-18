@@ -86,26 +86,24 @@ class FileHistoryRepository(HistoryRepository):
             return None
 
     def save(self, report: InterviewReport) -> str:
-        # Generate ID if we were to support provided ID, but here we generate new one.
-        # But wait, report doesn't have ID field in DTO (it has header, etc).
-        # We will generate an ID and retun it.
-        interview_id = str(uuid.uuid4())
+        # Check if interview_id is provided via raw_debug_info (from Dual Write Adapter)
+        # This enables single ID generation principle
+        if report.raw_debug_info and "_interview_id" in report.raw_debug_info:
+            interview_id = report.raw_debug_info["_interview_id"]
+            logger.debug(f"Using provided interview_id from Adapter: {interview_id}")
+        else:
+            # Fallback: Generate ID if not provided (standalone usage)
+            interview_id = str(uuid.uuid4())
+            logger.debug(f"Generated new interview_id: {interview_id}")
+        
         now = datetime.now()
         
         filename = self._generate_filename(now, interview_id)
         filepath = os.path.join(self.base_dir, filename)
         
         try:
-            # We save the report model dump
-            # Include the generated ID in a wrapper or just the report?
-            # Plan says: "InterviewReport 전체를 담은 JSON 파일"
-            # Metadata implies we rely on filename for ID/Timestamp.
-            
+            # Save the report model dump
             data = report.model_dump(mode='json')
-            
-            # Additional Context potentially? 
-            # Plan said: "Storage Format: InterviewReport 전체를 담은 JSON 파일."
-            # So just the content.
             
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)

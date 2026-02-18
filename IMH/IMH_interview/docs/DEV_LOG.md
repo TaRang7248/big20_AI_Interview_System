@@ -608,3 +608,220 @@ Plan 수립
     - `packages/imh_qbank/` 패키지 신설.
     - `logs/agent/` 로그 파일 참조.
 
+## 2026-02-13
+### TASK-025 RAG Fallback 엔진 통합 (RAG Fallback Engine Integration)
+- **요약**: LLM 질문 생성 실패 시 Static Question Bank로 안전하게 전환하는 3-Tier Fallback 구조를 SessionEngine 내부에 통합.
+- **변경 사항**:
+    - `packages/imh_session/dto.py`: `SessionQuestion` Value Object 및 `SessionQuestionType(GENERATED/STATIC)` 정의.
+    - `packages/imh_providers/question.py`: `QuestionGenerator` 인터페이스 및 `MockQuestionGenerator` 구현.
+    - `packages/imh_session/engine.py`: `_get_next_question()`에 3-Tier 전략 구현 (RAG → QBank → Emergency).
+        - Fallback은 상태 전이를 유발하지 않음.
+        - Source 타입은 Engine 내부에서만 결정.
+    - `packages/imh_service/session_service.py`: QuestionGenerator / QuestionBankService 의존성 주입.
+    - `scripts/verify_task_025.py`: Fallback, Snapshot Independence, Emergency 안정성 검증 스크립트 작성.
+- **검증 결과**:
+    - `python scripts/verify_task_025.py`: **Pass**
+        1. **Normal Generation**: RAG 성공 시 Source=GENERATED 확인.
+        2. **Explicit Fallback**: RAG 실패 시 Static QBank 사용 확인.
+        3. **Critical Failure**: QBank 비어있는 경우 Emergency Question 반환 확인.
+        4. **Snapshot Independence**: Provider/QBank 변경 이후에도 세션 내 current_question 불변 확인.
+- **주요 설계 반영**:
+    - **Authority**: Fallback 판단 권한은 SessionEngine 단일 주체로 고정.
+    - **Contract Protection**: Freeze / Snapshot / State Contract 침범 없음.
+    - **Immutability**: 질문은 Snapshot에 Value Object로 고정.
+    - **Boundaries**: Provider 및 Service는 정책 판단을 수행하지 않음.
+- **로그 및 산출물**:
+    - Fallback 동작 및 예외 처리 로그는 `logs/runtime/`에 기록.
+    - Contract Stability 검증 완료 (위반 없음).
+
+## 2026-02-18
+---
+
+### TASK-026 PostgreSQL 영속화 전환 (PostgreSQL Persistence Migration & Write Switch)
+
+- **요약**:  
+  기존 File/Memory 기반 저장 구조를 PostgreSQL 기반 단일 영속 구조로 안전하게 전환.  
+  Dual Write → Read Switch → Write Switch → Restart/Replay → Rollback 검증까지 완료.  
+  현재 시스템은 PostgreSQL Primary 구조로 안정 전환된 상태.
+
+---
+
+## 📌 변경 사항
+
+### 1️⃣ Checkpoint 1 – PostgreSQL Repository 구축
+
+- `HistoryRepository`
+- `SessionRepository`
+- `JobRepository`
+
+**구현 원칙**
+- Repository는 Engine 로직 포함 금지 (격리 유지)
+- DTO/Mapper 분리 유지
+- JSON 직렬화는 `model_dump(mode="json")` 기반 처리
+- Engine/PolicyEngine 호출 없음
+
+**검증**
+- `checkpoint1_test.log`: ALL PASSED
+- datetime 직렬화 문제 해결
+
+---
+
+### 2️⃣ Checkpoint 1.5 – 통합 안전성 검증
+
+- Freeze / Snapshot / State Contract 유지 확인
+- 역직렬화 + 도메인 생성자 호출 수준에서 복원 수행
+- PolicyEngine 미호출 검증
+
+**결과**
+- 통합 테스트 ALL PASSED
+- 기존 계약 침범 없음
+
+---
+
+### 3️⃣ Checkpoint 2 – Stage 1 Dual Write 체계 확립
+
+**구조**
+- Write: Primary(File/Memory) + Secondary(PostgreSQL)
+- Read: Primary만 사용
+- DB 직접 조회는 검증 스크립트 전용
+
+**Fail-Fast 정책**
+- PRIMARY_SUCCESS_SECONDARY_FAIL
+- SECONDARY_SUCCESS_PRIMARY_FAIL
+- BOTH_FAIL
+
+JSON 구조화 로그 기록:
+- event
+- case
+- domain
+- identifier
+- timestamp
+- error
+
+**CRITICAL 보완**
+- Report interview_id 단일 생성 원칙 적용
+- Adapter 1회 생성 → raw_debug_info 전달 → 동일 ID 저장
+
+**검증**
+- `checkpoint2_enhanced.log`: ALL PASSED
+- 회귀 테스트 통과
+
+---
+
+### 4️⃣ Checkpoint 3 – 기존 데이터 마이그레이션
+
+**목표**
+- File/Memory → PostgreSQL 완전 이관
+- 멱등성 보장
+- 100% 정합성 검증
+
+**핵심 개선**
+- JSONB 컬럼에 `json.dumps()` 저장 금지
+- `set_type_codec('jsonb')` 적용
+- dict 기반 저장/비교 확정
+
+**안전 프로토콜**
+- 자동 UPDATE 금지
+- FK 위반 SKIP 금지
+- 불일치 시 즉시 중단
+- Primary를 단일 진실 원천(Source of Truth)으로 고정
+
+**결과**
+- JSONB dict 기반 저장 확정
+- Primary(dict) == PostgreSQL(dict) 직접 비교 PASS
+- Orphan Report 격리 및 증거 보존 완료
+
+---
+
+### 5️⃣ Checkpoint 4 – Read Path Switch
+
+**Phase 4.1 – Shadow Read**
+- Memory vs PostgreSQL 비교 검증
+- 100% 데이터 일치 확인
+
+**Critical Fix**
+- question_history 저장 누락 버그 수정
+- asyncpg connection scheme 보완
+
+**Phase 4.2 – Canary Rollout**
+- 1% 세션 Postgres Read 적용
+- Deterministic Hash 기반 라우팅
+- 정상/Canary 세션 분리 검증 PASS
+
+---
+
+### 6️⃣ Stage 3 – Write Primary Switch
+
+- Write Primary = PostgreSQL 전환
+- Memory는 Secondary로 유지
+- Restart Replay PASS
+- Rollback 가능성 검증 PASS
+
+**운영 모드 확정**
+- Read: PostgreSQL (100%)
+- Write: PostgreSQL Primary
+- Secondary Write: Memory (Dual Write 유지)
+
+---
+
+## 🛡 주요 설계 원칙 유지
+
+- Engine 단일 정책 판단 구조 유지
+- Freeze 계약 변경 없음
+- Snapshot Double Lock 유지
+- State Contract 유지
+- Service/API Boundary 변경 없음
+- Command/Query 분리 유지
+- DTO/Mapper 분리 유지
+- AST Guardrail 전제 유지
+
+---
+
+## 🔄 Dual Write 전략
+
+- 즉시 제거하지 않음
+- 단기 안전망으로 유지
+- 제거 조건은 TASK-027 이후 별도 승인
+
+**제거 조건**
+- Redis Session Runtime State 도입 완료
+- Postgres-only Loopback PASS
+- Rollback/복구 전략 문서화
+- question_history 무결성 재검증 PASS
+
+---
+
+## 📊 검증 결과 요약
+
+- JSONB 타입 무결성 PASS
+- question_history 손실 없음
+- Restart Replay PASS
+- Rollback Safety PASS
+- Shadow/Canary/100% 전환 PASS
+- 구조 계약 위반 없음
+
+---
+
+## 📁 로그 및 산출물
+
+- checkpoint1_test.log
+- checkpoint2_enhanced.log
+- checkpoint3_completion_report.md
+- checkpoint4_completion_report.md
+- stage3_execution_report.md
+- orphan_reports_backup/
+- quarantine_manifest.json
+
+모든 검증 스크립트 PASS 확인.
+
+---
+
+## 🎯 최종 상태
+
+TASK-026은 “PostgreSQL 단일 영속 구조로의 안전 전환” 목표를 달성하였다.
+
+Redis 도입은 TASK-027 범위이며,  
+Dual Write 제거는 TASK-027 안정화 이후 수행한다.
+
+---
+

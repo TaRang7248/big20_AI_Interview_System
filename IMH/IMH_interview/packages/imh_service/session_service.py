@@ -5,10 +5,14 @@ from packages.imh_dto.session import SessionResponseDTO, AnswerSubmissionDTO
 from packages.imh_session.engine import InterviewSessionEngine
 from packages.imh_session.repository import SessionStateRepository, SessionHistoryRepository
 from packages.imh_session.dto import SessionConfig
+from packages.imh_service.shadow_reader import ShadowReader
 import os
+import logging
+import logging
 
 
 from packages.imh_job.enums import JobStatus
+from packages.imh_service.canary import CanaryManager
 
 class SessionService:
     """
@@ -24,14 +28,50 @@ class SessionService:
         history_repo: SessionHistoryRepository, 
         job_repo: "JobPostingRepository",
         question_generator: "QuestionGenerator",
-        qbank_service: "QuestionBankService"
+        qbank_service: "QuestionBankService",
+        postgres_state_repo: Optional[SessionStateRepository] = None,
+        canary_manager: Optional[CanaryManager] = None
     ):
         self.state_repo = state_repo
         self.history_repo = history_repo
         self.job_repo = job_repo
         self.question_generator = question_generator
         self.qbank_service = qbank_service
+        self.postgres_state_repo = postgres_state_repo
+        self.canary_manager = canary_manager
         self.concurrency_manager = ConcurrencyManager()
+        self.logger = logging.getLogger("imh.session_service")
+
+    def _load_session_context(self, session_id: str) -> Optional["SessionContext"]:
+        """
+        Helper to load session context with Canary Routing and Shadow Read.
+        """
+        # Determine Primary Repo based on Canary
+        primary_repo = self.state_repo
+        shadow_repo = self.postgres_state_repo
+        
+        # Canary Logic
+        if self.canary_manager and self.postgres_state_repo and self.canary_manager.check_canary_access(session_id):
+            primary_repo = self.postgres_state_repo # Read from Postgres
+            shadow_repo = self.state_repo # Shadow from Memory
+            self.logger.info(f"Session {session_id} is in canary group. Loading from Postgres.")
+            
+        session = primary_repo.get_state(session_id)
+        
+        # Shadow Read
+        if shadow_repo:
+             # Copy for comparison to avoid race conditions (mutation during comparison)
+             # Use model_copy if Pydantic v2, copy if v1
+             primary_copy = session.model_copy(deep=True) if hasattr(session, 'model_copy') else session.copy(deep=True) if session else None
+             
+             ShadowReader.compare(
+                primary_result=primary_copy,
+                shadow_func=lambda: shadow_repo.get_state(session_id),
+                entity_name="Session",
+                entity_id=session_id
+             )
+
+        return session
     
     def create_session_from_job(self, job_id: str, user_id: str) -> SessionResponseDTO:
         """
@@ -84,7 +124,9 @@ class SessionService:
         # 1. Acquire Lock (Fail-Fast)
         with self.concurrency_manager.acquire_lock(session_id):
             # 2. Load State to check existence
-            context = self.state_repo.get_state(session_id)
+            # 2. Load State (with Routing & Shadow Read)
+            context = self._load_session_context(session_id)
+
             if not context:
                 raise ValueError(f"Session {session_id} not found")
 
@@ -121,8 +163,8 @@ class SessionService:
         """
         Read-Only operation. Bypasses Lock.
         """
-        context = self.state_repo.get_state(session_id)
-        if not context:
+        # Use shared helper
+        session = self._load_session_context(session_id)
+        if not session: # Changed from 'context' to 'session'
             return None
-        return SessionMapper.to_dto(context)
-
+        return SessionMapper.to_dto(session) # Changed from 'context' to 'session'
