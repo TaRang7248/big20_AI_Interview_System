@@ -913,3 +913,51 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
     - Redis는 단순 최적화 계층이며, 장애 시 언제든 우회 가능.
     - Write-Back 없음.
 
+
+### TASK-027 / CP4 Prompt Composition Cache Implemented (Verified)
+- **일자**: 2026-02-19
+- **상태**: **VERIFIED**
+- **요약**: Prompt Composition Cache (CP4) 구현 완료. Redis를 통한 프롬프트 구성 비용 절감 및 안정적 Fallback 구조 확보.
+- **주요 구현**:
+    - `packages/imh_core/constants.py`: `LOGICAL_PROMPT_VERSION` ("v1.0.0") 정의.
+    - `packages/imh_session/infrastructure/redis_prompt_repository.py`:
+        - Cache Key Integrity: Logical Version, Snapshot, Persona, Mode, Policy, Model, Input Hash 포함.
+        - Fail-Open Logic: Redis 장애 시 `None` 반환 및 로그 경고 (기능 중단 없음).
+        - Jitter TTL: 캐시 만료 분산을 위한 Jitter 적용.
+    - `packages/imh_service/prompt/composer.py`:
+        - `CachedPromptComposer`: Read-Through Caching 구현.
+        - Fail-Open Composition: Cache Miss/Error 시 즉시 Real Composition 수행.
+- **검증 결과**:
+    - `scripts/verify_task_027_cp4.py`: **Pass (4 tests)**
+        1. **Cache Miss**: Composition 수행 및 저장 확인.
+        2. **Cache Hit**: 재요청 시 저장된 결과 반환 확인.
+        3. **Key Safety**: Context 변경 시 새로운 Key 생성 및 Miss 확인 (Stale Cache 방지).
+        4. **Fail-Open**: Redis 장애 시뮬레이션 시 정상적으로 프롬프트 반환 확인.
+- **Authority Contract 준수**:
+    - Prompt Cache는 Derived Data이며, 원본 데이터(Snapshot, Policy 등)에 대한 권한 없음.
+    - Write-Back 없음.
+
+### TASK-027 / CP4 Operational Enhancements (Post-Audit)
+- **일자**: 2026-02-19
+- **상태**: **VERIFIED**
+- **요약**: CP4 Audit에서 식별된 Minor Risk(Max Size Limit, Stampede)에 대한 운영 보강 구현.
+- **구현 내용**:
+    1. **Max Size Limit**: `MAX_PROMPT_CACHE_SIZE_BYTES` (100KB) 초과 시 캐싱 생략 (Optimization Skip).
+    2. **Stampede Protection**: `try_acquire_lock` 도입. Reference Lock 획득 성공 시에만 Cache Save 수행 (Leader-Only Save). Lock 실패 시(Follower) 계산은 수행하되 저장은 생략하여 Write Contention 방지.
+- **검증 결과**:
+    - `scripts/verify_task_027_cp4.py` (Extended): **Pass (6 tests)**
+        - Test 5: Max Size 초과 프롬프트 저장 건너뜀 확인.
+        - Test 6: Lock Busy 상태에서 저장 건너뜀(Follower 동작) 확인.
+
+### TASK-027 / CP4 LOCKED (Prompt Composition Cache)
+- **일자**: 2026-02-19
+- **상태**: **LOCKED**
+- **핵심 계약 요약**:
+    - **PG Authority**: Prompt Cache is strictly Derived Data.
+    - **Read Optimization Only**: Redis Failure = Fail Open (No impact on availability).
+    - **Key Integrity**: Logical Version + Snapshot + Inputs ensure strict correctness.
+    - **Operational Safety**: Max Size Limit (100KB) & Stampede Protection (Leader-Only Save).
+- **검증**: `scripts/verify_task_027_cp4.py` **PASS** (6 tests)
+- **감사**: `docs/TASK-027_CP4_AUDIT_REPORT.md` (Authority & Safety Verified)
+
+

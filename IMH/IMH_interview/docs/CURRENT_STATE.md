@@ -187,7 +187,7 @@
 ---
 ## 2. 현재 개발 단계
 
-- 상태: **Phase 9 진행 중 (Redis Baseline CP0 LOCKED)**
+- 상태: **Phase 9 COMPLETE → Phase 10 (TASK-028) 준비 단계**
 
 ---
 
@@ -252,15 +252,20 @@
 
 ---
 
-# Phase 9. Redis Introduction (Runtime & Control)
+# Phase 9. Redis Runtime & Cache Architecture (COMPLETE)
 
-## TASK-027 / CP0 (LOCKED)
+## TASK-027 / CP0 ~ CP4 (🔒 LOCKED)
 
-- **Status**: VERIFIED → LOCKED
+---
+
+## TASK-027 / CP0 (Baseline Runtime Layer)
+
+- **Status**: VERIFIED → 🔒 LOCKED
 - **Scope**:
   - Runtime Mirror (PG → Redis 단순 복제)
   - Distributed Lock (`interview_id` 단위)
   - Idempotency Guard (`request_id` 기반)
+
 - **Immutable Contracts**:
   - PostgreSQL Only Source of Truth
   - Write Order: PG Commit → Redis Mirror
@@ -269,49 +274,114 @@
   - Hydration = Mirror 복원 (상태 변경 아님)
   - Pause는 Operational Flag (State Transition 아님)
 
-📌 **Phase 9 현재 기준선**
-- Redis는 Authority가 아니다.
-- Redis는 Control + Runtime Layer 역할만 수행한다.
-- Snapshot / Freeze / State Contract 침해 없음.
-- Restart Replay / Rollback Safety 유지.
+---
+
+## TASK-027 / CP1 (Projection Cache)
+
+- **Status**: VERIFIED → 🔒 LOCKED
+- **Scope**:
+  - SessionProjectionDTO
+  - RedisProjectionRepository
+  - Read-Through Strategy
+  - Invalidate-First Policy
+  - Redis Down Fallback
 
 ---
 
-# 향후 단계 (NOT STARTED)
+## TASK-027 / CP2 (RAG Cache)
 
-## Phase 9+: Redis Cache Extension (CP1 ~ CP4)
-
-- CP1: Projection Cache (Session View)
-- CP2: RAG Cache
-- CP3: Candidate Cache
-- CP4: Prompt Cache
-
-※ 모든 확장은 CP0 불변 계약을 침해하지 않는 범위에서만 수행한다.
+- **Status**: VERIFIED → 🔒 LOCKED
+- **Scope**:
+  - RAGCacheDTO / RedisRAGRepository
+  - CachedQuestionGenerator Decorator
+  - Async Save
+  - Versioned Key Strategy
+  - Authority 기반 TTL 제어
 
 ---
 
-# 현재 Phase의 목적 (Phase 9)
+## TASK-027 / CP3 (Candidate Cache)
+
+- **Status**: VERIFIED → 🔒 LOCKED
+- **Scope**:
+  - Candidate Entity Cache
+  - Candidate List Cache
+  - Read Optimization 전용 설계
+  - Invalidate-on Save/Delete
+  - Stale Data Protection (`is_active=true` 보장)
+  - Redis Down Soft Fallback
+
+---
+
+## TASK-027 / CP4 (Prompt Composition Cache)
+
+- **Status**: VERIFIED → 🔒 LOCKED
+- **Scope**:
+  - RedisPromptRepository
+  - CachedPromptComposer (Read-Through Pattern)
+  - Logical Prompt Version Identifier
+  - Versioned Key Strategy
+  - Max Size Limit
+  - Stampede Protection (Leader/Follower 최소 완화 전략)
+  - Fail-Open Strategy
+
+---
+
+# Phase 9 최종 기준선 (LOCKED BASELINE)
+
+- PostgreSQL = Single Source of Truth
+- Redis = Read Optimization Only
+- Write Order = PG → Redis
+- No Write-Back
+- Snapshot Immutable 유지
+- Job Policy Freeze 유지
+- Deterministic Evaluation 보장
+- Restart Replay / Rollback Safety 유지
+
+📌 Redis는 Authority가 아니다.
+📌 모든 Cache는 Derived Data이다.
+📌 Redis Down은 시스템 장애가 아니다.
+📌 Dual Write 제거 조건 충족 상태.
+
+---
+
+# Phase 10 (NEXT)
+
+## TASK-028 관리자 통계 및 운영 관측 계층 (NOT STARTED)
+
+- 운영 통계 Query Layer 설계
+- 공고별 / 직무별 / 평가축별 통계
+- 평균 점수 / 합격률 / 약점 분포
+- Cache / Model / Latency 관측 확장 가능 구조 설계
+- 멀티모달 품질 지표 수용 가능한 구조 확보
+
+---
+
+# Phase 9의 목적 (완료)
 
 - Redis Control Layer 안정화
 - Runtime Mirror 신뢰성 확보
-- Dual Write 제거 시점 판단을 위한 안전성 확보
-- CP1~CP4 확장을 위한 계약 기반 마련
-
+- Cache 확장(CP1~CP4) 안전성 검증 완료
+- Dual Write 제거 준비 완료
+- Phase 10 확장을 위한 안정적 아키텍처 기반 확보
 
 
 ## 3. 확정된 핵심 방향 (변경 금지)
 
-### 3.1 기능 우선순위 (최신 기준)
+### 3.1 기능 우선순위 (Phase 9 완료 기준)
 
-1. **Phase 2 Playground 기반 정적 파일 분석은 유지**
-   - 오디오/영상 업로드 → STT / 감정 / 시선 / 음성 분석 검증
-   - 문서(PDF) 업로드 → Text 추출(PDF→Text)
-   - 목적: 개발/검증/테스트 하네스(Regression) 역할 유지
-   - Phase 6 이후에도 독립 테스트 환경으로 유지
-   - Session Engine / Snapshot 구조와 완전히 분리 유지
+1. **Phase 2 Playground 기반 정적 파일 분석은 유지 (독립 테스트 하네스)**  
+   - 오디오/영상 업로드 → STT / 감정 / 시선 / 음성 분석 검증  
+   - 문서(PDF) 업로드 → Text 추출(PDF→Text)  
+   - 목적: 개발/검증/Regression 테스트 환경 유지  
+   - Session Engine / Snapshot 구조와 완전히 분리 유지  
+   - Redis / Runtime / Cache 계층과도 독립  
+   - Engine 상태 전이(State Contract)와 무관  
 
-2. **Phase 7 완료: 질문은행 + RAG Fallback 통합 구조 확정**
-   - Session Engine 단일 정책 판단 구조 유지
+---
+
+2. **Phase 7 완료: 질문은행 + RAG Fallback 통합 구조 확정 (LOCKED 구조)**  
+   - Session Engine 단일 정책 판단 구조 유지  
    - Question Source 분리 구조 확정:
      - STATIC (Question Bank)
      - GENERATED (RAG/LLM)
@@ -319,39 +389,61 @@
      1) RAG 생성 시도
      2) Static QBank Fallback
      3) Emergency Safe Fallback
-   - Fallback은 상태 전이를 유발하지 않음 (State Contract 불변)
-   - Generated 질문은 Snapshot에 Value Object로 고정
-   - Freeze / Snapshot / State Contract 계약 침범 금지
-   - Engine 외부에서 질문 Source 변경 경로 금지
-
-3. **TTS(Text→Speech)**
-   - 실시간 면접 단계의 구성요소
-   - 현재는 HOLD 유지
-   - 질문 생성 계층(RAG) 및 Snapshot 안정화 이후 재개
-   - Engine 경계 침범 없이 Provider 방식으로 통합 예정
-
-4. **RAG / 질문은행 / 임베딩**
-   - 온프레미스 저성능 모델 보정 목적
-   - 질문 품질 안정화 및 직무/공고 기반 보강
-   - Phase 7에서 Fallback 구조까지 안정화 완료
-   - 향후 Phase 8에서는:
-     - PGVector / 외부 RAG 도입 가능
-     - Engine 경계 불변 유지
-   - Snapshot 계약과 충돌 금지
-   - metadata는 최소 집합 유지 (Snapshot 오염 방지)
-
-5. **UI/프론트 연동**
-   - API 및 질문 생성 계층 안정화 이후 확장
-   - API → Service → Engine 단일 Command 경로 유지
-   - Command/Query 분리 원칙 유지
-   - 상태 전이(State Contract) API 우회 금지
-   - 질문 Source 조작 API 금지
+   - Fallback은 상태 전이를 유발하지 않음 (State Contract 불변)  
+   - Generated 질문은 Snapshot에 Value Object로 고정  
+   - Freeze / Snapshot / State Contract 계약 침범 금지  
+   - Engine 외부에서 Question Source 변경 경로 금지  
+   - Redis Cache 계층은 Read Optimization Only  
+   - Snapshot Immutable 계약 유지  
 
 ---
 
-- (세션 상태) APPLIED / IN_PROGRESS / COMPLETED / INTERRUPTED / EVALUATED
-  → 기준 상태값으로 유지 (변경 금지)
-  → Fallback은 해당 상태에 영향을 주지 않음
+3. **TTS (Text → Speech)**  
+   - 실시간 면접 단계의 구성요소  
+   - 현재 HOLD 유지  
+   - Prompt Cache / Snapshot 안정화 이후 재개  
+   - Provider 패턴 기반 통합 예정  
+   - Engine 경계 침범 금지  
+   - Redis Authority와 무관  
+
+---
+
+4. **RAG / 질문은행 / 임베딩 (Phase 7~9 기준 안정화 완료)**  
+   - 온프레미스 저성능 모델 보정 목적  
+   - 질문 품질 안정화 및 직무/공고 기반 보강  
+   - Fallback 구조 LOCKED  
+   - 향후 확장 가능성:
+     - PGVector 도입
+     - 외부 RAG 엔진 교체
+   - Engine 경계 불변 유지  
+   - Snapshot 계약과 충돌 금지  
+   - metadata는 최소 집합 유지 (Snapshot 오염 방지)  
+   - Redis RAG Cache는 Derived Data이며 Authority가 아님  
+
+---
+
+5. **UI / 프론트 연동 (Phase 10 이후 확장)**  
+   - API → Service → Engine 단일 Command 경로 유지  
+   - Command / Query 분리 원칙 유지  
+   - 상태 전이(State Contract) API 우회 금지  
+   - 질문 Source 조작 API 금지  
+   - Redis Cache를 직접 접근하는 API 금지  
+   - Snapshot Freeze 이후 수정 경로 금지  
+
+---
+
+## 세션 상태 (변경 금지)
+
+- APPLIED  
+- IN_PROGRESS  
+- COMPLETED  
+- INTERRUPTED  
+- EVALUATED  
+
+→ 기준 상태값으로 유지 (변경 금지)  
+→ Fallback은 해당 상태에 영향을 주지 않음  
+→ Redis Runtime / Cache는 상태 전이를 발생시키지 않음  
+→ Evaluation은 EVALUATED 상태에서만 결과 확정  
 
 ---
 
@@ -371,52 +463,103 @@
 ※ Streaming 방식은 별도 Phase에서 구조 검토 후 도입
 
 ---
-
 ## 4. 저장 정책 (확정)
 
 - ❌ 서버는 **원본 영상/오디오 파일을 장기 저장하지 않는다**
 - ⭕ 저장 대상:
-  - 텍스트(STT 결과)
+  - 텍스트 (STT 결과)
   - 분석 결과 요약
-  - 평가 점수 및 근거(JSONB)
-- 목적: 보안, 비용, 법적 리스크 최소화
+  - 평가 점수 및 근거 (JSONB)
+- 목적:
+  - 보안 리스크 최소화
+  - 저장 비용 최소화
+  - 법적 책임 범위 최소화
 
-### 4.1 현재 저장소 상태(현행)
-- 현재 활성 DB(PostgreSQL/Redis/PGVector)는 도입하지 않는다.
-- 리포트/이력 저장은 파일 기반(FileHistoryRepository)으로 운영한다.
-- DB 도입은 리포트 구조 및 실시간 플로우 정책이 안정화된 이후 단계에서 진행한다.
 ---
 
-## 5. 데이터/설계 기준 문서 (읽기 전용)
+### 4.1 현재 저장소 상태 (Phase 9 완료 기준)
 
-아래 문서들은 **_refs/** 폴더에 있으며,  
+- PostgreSQL = **Single Source of Truth**
+  - users / job_postings / interviews / evaluations 기반 영속화
+  - chat_history는 `INTERVIEWS.chat_history (jsonb)`로 통합
+  - 평가 결과는 JSONB 기반 구조로 저장
+
+- Redis = **Read Optimization Only**
+  - Runtime Mirror
+  - Projection / RAG / Candidate / Prompt Cache
+  - Authority 없음
+  - No Write-Back 유지
+
+- PGVector:
+  - 현재 필수 구성 아님
+  - 향후 RAG 고도화 시 선택적 도입 가능
+
+- 파일 기반 저장소(FileHistoryRepository):
+  - Phase 2~3 개발 단계에서 사용
+  - 현재는 운영 영속 저장소로 사용하지 않음
+
+---
+
+## 5. 데이터 / 설계 기준 문서 (읽기 전용, 계약 기준)
+
+아래 문서들은 `_refs/` 폴더에 있으며,  
 구현 시 반드시 **무손실 반영**해야 한다.
 
-1. ERD / 데이터 아키텍쳐  
-   - `26.02.05(목)데이터 아키텍쳐,ERD 가이드.md`
-   - 핵심:
-     - `MESSAGES` 테이블 제거
-     - `INTERVIEWS.chat_history (jsonb)` 통합
+### 5.1 ERD / 데이터 아키텍쳐
+- `26.02.05(목)데이터 아키텍쳐,ERD 가이드.md`
+- 핵심:
+  - `MESSAGES` 테이블 제거
+  - `INTERVIEWS.chat_history (jsonb)` 통합
+  - PostgreSQL Authority 유지
 
-2. UI 설계 (최신본)
-   - `26.02.06(금)AI 면접 프로그램 UI 설계 초안.md`
-   - 면접 진행도(phase), 답변 완료 버튼, 관리자 UI 포함
-
-3. 질문 태그 설계
-   - `26.02.05(목)질문태그설계.md`
-   - tag_code는 **문자열 식별자**, 변경/삭제 금지
-
-4. 정량 평가 루브릭
-   - `26.02.09(월)정량평가 루브릭 가이드.md`
-   - 평가 JSON 스키마 고정
-
-5. 인터뷰 정책 스펙
-   - `26.02.11(수)인터뷰 정책 스펙.md`
-   - 최소 질문 10개 보장
-   - 침묵 2케이스 처리 정책(무응답/답변 후 침묵 구분)
-   - 세션 상태 ENUM(APPLIED / IN_PROGRESS / COMPLETED / INTERRUPTED / EVALUATED)
-   - 결과 공개 정책(2주 이내 합/불합 자동 통지 보장)
 ---
+
+### 5.2 UI 설계 (최신본)
+- `26.02.06(금)AI 면접 프로그램 UI 설계 초안.md`
+- 포함:
+  - 면접 진행도(phase)
+  - 답변 완료 버튼
+  - 관리자 UI
+- 상태 전이(State Contract) 우회 금지
+
+---
+
+### 5.3 질문 태그 설계
+- `26.02.05(목)질문태그설계.md`
+- tag_code는 문자열 식별자
+- 변경/삭제 금지
+- 평가 JSON과 1:1 대응
+
+---
+
+### 5.4 정량 평가 루브릭
+- `26.02.09(월)정량평가 루브릭 가이드.md`
+- 평가 JSON 스키마 고정
+- Deterministic Evaluation 보장
+- Redis Cache는 평가 근거가 아님
+
+---
+
+### 5.5 인터뷰 정책 스펙
+- `26.02.11(수)인터뷰 정책 스펙.md`
+
+고정 정책:
+
+- 최소 질문 10개 보장
+- 침묵 2케이스 처리 정책
+  - 무응답
+  - 답변 후 침묵
+- 세션 상태 ENUM:
+  - APPLIED
+  - IN_PROGRESS
+  - COMPLETED
+  - INTERRUPTED
+  - EVALUATED
+- 결과 공개 정책:
+  - 2주 이내 합/불합 자동 통지 보장
+- Job Policy Freeze at Publish 계약 유지
+- Snapshot Double Lock 유지
+
 
 ## 6. 확정된 폴더 / 모듈 구조
 
@@ -451,7 +594,7 @@ IMH/IMH_Interview/
   - TASK-002 완료 (config / errors / dto)
   - 공통 로깅 기반 포함 (TASK-001)
   - TASK-026: PostgreSQL Repository 구현 및 Primary Write Path 전환 완료
-  - TASK-027: Redis Control Layer 및 Runtime Mirror 도입 완료 (CP0 LOCKED)
+  - TASK-027: Redis Control Layer 및 Runtime Mirror 도입 완료 (CP0~CP4 🔒 LOCKED)
 
 - `packages/imh_providers/`: ✅ DONE
   - TASK-003: Provider 인터페이스 + Mock 구조 확정
@@ -469,7 +612,8 @@ IMH/IMH_Interview/
 
 - `packages/imh_history/`: ✅ DONE
   - TASK-013: 리포트 저장소(FileHistoryRepository) 구현 완료
-  - JSON 파일 기반 영구 저장 및 이력 조회 검증 완료
+  - JSON 파일 기반 저장은 개발 초기 단계 용도
+  - 운영 영속 저장은 PostgreSQL 기반으로 전환 완료 (TASK-026 이후)
 
 - `packages/imh_job/`: ✅ DONE
   - TASK-019: 공고 정책 엔진(Job Policy Engine) 구현 완료
@@ -559,13 +703,14 @@ IMH/IMH_Interview/
     - Phase 5 계약은 변경 불가 기준선으로 고정
 
 📌 현재 상태 요약:
-- Phase 1 ~ Phase 9 (CP0) 완료
-- PostgreSQL Primary 전환 완료
-- Redis Runtime & Control Baseline 확정 (CP0 LOCKED)
+- Phase 1 ~ Phase 9 완료 (TASK-027 CP0~CP4 🔒 LOCKED)
+- PostgreSQL = Single Source of Truth
+- Redis = Read Optimization Only (Projection / RAG / Candidate / Prompt Cache 포함)
 - API / Service / Engine 경계 고정
 - Snapshot / Freeze / State Contract 보호 상태 유지
-- Redis는 Authority가 아닌 Control + Runtime Layer로 한정
-- CP1 (Projection Cache) 미시작
+- Dual Write 제거 조건 충족
+- Phase 10 (TASK-028) 준비 상태
+
 
 
 ## 7. 로깅 / 기록 규칙 (중요)
@@ -614,111 +759,54 @@ IMH/IMH_Interview/
 - `docs/DEV_LOG.md` 업데이트(요약/테스트/로그 경로)
 
 ---
-
 ## 9. 지금 당장 하면 안 되는 것 (중요)
 
-아래 항목은 현재 단계(Phase 7 완료 → 구조 안정화 단계)에서 **명시적으로 금지**한다.
+아래 항목은 현재 단계(Phase 9 완료 → Phase 10 진입 준비 단계)에서 **명시적으로 금지**한다.
 
-- DB 마이그레이션/스키마 확정(ERD 반영 구현 포함)  
-  → Phase 8에서 별도 계약 하에 진행
-- 실시간 면접의 네트워크/스트리밍 인프라 구현(WebRTC/저지연 스트리밍 파이프라인)
-- LLM 평가 엔진의 대규모 재구현(루브릭/스코어링 로직 재설계)
-- 신규 도메인 확장 목적의 엔드포인트 대량 생성 (Phase 6 범위 외 기능 확장 금지)
-- 프론트/UI 개발(대시보드/관리자 화면 포함)
-- Streaming 기반 LLM 구조 전환(Async/WebSocket 전환 포함)
-- Phase 5에서 확정된 상태 ENUM / Snapshot 계약 / Freeze 계약 변경
-- TASK-022에서 확정된 Service Layer 구조(명령/조회 분리, DTO 격리, Lock 정책) 변경
+- PostgreSQL Authority 변경 또는 우회
+  → PostgreSQL = Single Source of Truth 계약 유지
+- Redis를 Authority로 사용하는 구조 도입
+  → Redis는 Read Optimization Only
+  → No Write-Back 유지
+  → Write Order (PG → Redis) 변경 금지
+- 실시간 면접의 네트워크/스트리밍 인프라 구현 (WebRTC / 저지연 스트리밍 파이프라인)
+  → Playground 기반 정적 분석 우선
+- LLM 평가 엔진의 대규모 재구현 (루브릭/스코어링 로직 재설계)
+  → 정량 평가 루브릭 스키마 고정
+- Streaming 기반 LLM 구조 전환 (Async/WebSocket 전환 포함)
+  → Engine 경계 불변 유지
+- Phase 5에서 확정된 상태 ENUM 변경
+  (APPLIED / IN_PROGRESS / COMPLETED / INTERRUPTED / EVALUATED)
+- Snapshot 계약 / Job Policy Freeze 계약 변경
+- TASK-022에서 확정된 Service Layer 구조 변경
+  (Command/Query 분리, DTO 격리, Lock 정책)
 - Engine 단일 정책 판단 구조 변경
 - Question Source 구조(STATIC / GENERATED) 변경
 - Generated 질문의 Session-local 자산 정책 변경
 - Fallback 3-Tier 전략 변경
-
-> 현재는 “RAG Fallback 구조 안정화 및 계약 보호 단계”이며,  
-> 핵심 정책/상태/스냅샷/엔진 경계 계약은 변경하지 않는다.
+- Redis Cache를 직접 조작하는 API 노출
+- Snapshot 외부 수정 경로 추가
+> 현재는 “Redis 아키텍처 LOCKED 상태에서
+> 통계/관측 확장(Phase 10)으로 진입하는 단계”이며,
+> 핵심 정책/상태/스냅샷/엔진/Authority 계약은 절대 변경하지 않는다.
 
 ---
-
 ## 10. 현재 최우선 목표
+
+## Phase 9 (COMPLETE)
+
+- TASK-027 (CP0~CP4) 🔒 LOCKED
+- Redis = Read Optimization Only
+- PostgreSQL = Single Source of Truth
+- Write Order = PG → Redis
+- No Write-Back 유지
+- Snapshot / Freeze / State Contract 침해 없음
+
+---
 
 ## ACTIVE
 
-### Phase 9 안정화 (Redis Baseline 확정 이후)
-
-- Redis Control Layer 안정성 재검증
-- Distributed Lock / Idempotency Guard 실환경 시나리오 점검
-- Hydration 신뢰성 검증 (Flush / 장애 / 재기동 상황)
-- Dual Write 제거 시점 판단을 위한 안정성 데이터 수집
-- CP0 불변 계약 침해 여부 지속 모니터링
-
-📌 현재 기준:
-- PostgreSQL = 단일 Source of Truth
-- Redis = Control + Runtime Mirror + Read Optimization Caches (CP1/CP2)
-- Write Order = PG → Redis (절대 순서 유지)
-- No Write-Back (Redis → PG 금지)
-
----
-
-## Active Phase 9 Implementation
-
-### TASK-027 / CP1: Projection Cache Implemented (LOCKED)
-- **Goal**: Redis Session View Projection 구축
-- **Status**: ✅ LOCKED (Verified & Frozen)
-- **Outcome**: 
-  - `SessionProjectionDTO` 정의 및 Redis Repo 구현
-  - `get_session_projection` Read-Through 전략 적용
-  - `Invalidate-First` 정책 준수 확인
-  - Redis Down 검증 완료
-  - PostgreSQL Authority 유지 (Projection은 Derived View)
-  - **Restriction**: CP2~CP4 작업 진행 중 CP1 구조 변경 금지.
-
----
-
-### TASK-027 / CP2: RAG Cache Implemented (LOCKED)
-- **Goal**: 비용 최적화 및 Latency 단축
-- **Status**: ✅ LOCKED (Verified & Frozen)
-- **Outcome**: 
-  - `RAGCacheDTO` 정의 및 `RedisRAGRepository` 구현
-  - `CachedQuestionGenerator` Read-Through Decorator 적용
-  - Async Save & Graceful Fallback 구현
-  - Versioned Key & Dynamic TTL (`TTLContextResolver`) 적용 완료
-  - Cache Hit 시 SessionQuestion 재구성 (새 ID / SourceType / cached metadata)
-  - **Audit**: `docs/TASK-027_CP2_AUDIT_REPORT.md` Pass
-
-  - **Immutable Contracts**:
-    - **PG Authority**: Cache is NOT Logic Decision Source
-    - **Redis Role**: Read Optimization Only
-    - **Write Flow**: No Write-Back to PG
-    - **Safety**: Async Save & Graceful Degradation
-    - **Key Integrity**: 결과에 영향 주는 파라미터는 반드시 Key에 포함 (축소 금지)
-
----
-
-### TASK-027 / CP3: Candidate Pool Cache (LOCKED)
-- **Goal**: 질문 생성 후보군(Candidates) 캐싱
-- **Status**: ✅ LOCKED (Verified & Frozen)
-- **Outcome**: 
-  - `RedisCandidateRepository` 구현 (Resilience 적용)
-  - `CachedQuestionRepository` (Read-Through Proxy) 적용
-  - `get_candidates` 최적화 및 List Cache 적용
-  - Soft Delete (`is_active=false`) 노출 방지 검증 완료
-  - Redis Down 시 Graceful Fallback (Service Continuity) 보장
-  - **Audit**: `docs/TASK-027_CP3_VERIFICATION_REPORT.md` Pass
-  - **Immutable Contracts**:
-    - **PG Authority**: Source Repository is Truth
-    - **No Write-Back**: Redis -> Source 금지
-    - **Resilience**: Redis 장애는 기능 장애가 아님
-
----
-
-## Next Approval Target (Phase 9 확장 단계)
-
-### TASK-027 / CP4: Prompt Composition Cache (Planned)
-- **Goal**: 프롬프트 구성 결과 캐싱 (Read Optimization)
-- **Scope**: TBD in CP4 Plan
-- **Status**: Not Started
-
-
-
+### Phase 10 – TASK-028 관리자 통계 및 운영 관측 계층
 
 ---
 
@@ -729,9 +817,10 @@ IMH/IMH_Interview/
 - **Goal**:
   - AI 면접 질문을 음성(TTS)으로 출력하기 위한 Provider 계층 준비
 - **보류 사유**:
-  - Runtime 안정화(Phase 9 CP0) 우선
-  - Projection/Cache 전략(CP1~CP4) 구조 확정 전에는 출력 계층 확장 보류
+  - Phase 10 통계/관측 계층 설계 우선
+  - Engine 경계 및 Snapshot 계약 안정성 유지 필요
+  - 실시간/Streaming 전략 별도 승인 필요
 - **재개 조건**:
-  - Redis 확장 단계(CP1~CP2) 안정화
-  - 세션 상태 관리 구조 장기 안정성 검증 완료
-  - Streaming 전략 별도 승인 후 진행
+  - Phase 10 완료
+  - 운영 통계 기반 안정성 데이터 확보
+  - Streaming 아키텍처 별도 계약 수립 후 진행

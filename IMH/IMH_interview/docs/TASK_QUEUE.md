@@ -360,12 +360,13 @@
 
 ---
 
-## ACTIVE
+### TASK-027 Redis 세션 상태 및 캐시 계층 도입 (Checkpoint 기반 진행) ✅ COMPLETE
 
-### TASK-027 Redis 세션 상태 및 캐시 계층 도입 (Checkpoint 기반 진행)
 - **Goal**:
   - 실시간 세션 상태 및 락 관리를 안정화하고,
-  - Projection / RAG Cache 계층을 구축하여 Read Optimization을 확정한다.
+  - Projection / RAG / Candidate / Prompt Cache 계층을 구축하여
+    Redis = Read Optimization Only 구조를 확정한다.
+  - PostgreSQL = Single Source of Truth 계약을 강화한다.
   - Dual Write 제거 조건을 충족한다.
 
 - **Scope (CP0: Baseline)**: ✅ LOCKED
@@ -399,11 +400,27 @@
   - `scripts/verify_task_027_cp3.py` Pass
   - `TASK-027_CP3_VERIFICATION_REPORT.md` VERIFIED
 
-- **Future CP (Not Started)**:
-  - CP4: Prompt Composition Cache
+- **Scope (CP4: Prompt Composition Cache)**: ✅ LOCKED
+  - Redis Prompt Repository
+  - CachedPromptComposer (Read-Through Pattern)
+  - Logical Prompt Version Identifier
+  - Versioned Key Strategy
+  - Max Size Limit
+  - Stampede Protection (Leader/Follower 최소 방지 전략)
+  - Fail-Open Strategy
+  - `verify_task_027_cp4.py` Pass
+  - `TASK-027_CP4_AUDIT_REPORT.md` Pass
+
+- **Architecture Contracts Reinforced**:
+  - PostgreSQL = Single Source of Truth
+  - Redis = Read Optimization Only
+  - Write Order = PG → Redis
+  - No Write-Back
+  - Snapshot Immutable 유지
+  - Deterministic Evaluation 보장
 
 - **Dual Write Removal Condition**:
-  - Postgres-only 모드 안정성 검증 완료 후 승인
+  - PostgreSQL-only 모드 안정성 검증 완료
 
 - **Out of Scope**:
   - Redis Cluster / HA 구성
@@ -413,34 +430,43 @@
 
 ---
 
-## BACKLOG
+## ACTIVE
 
 ### TASK-028 관리자 통계 대시보드
+
 - **Goal**:
-  - 공고별/직무별/평가축별 통계 시각화
-- **Scope**:
+  - 공고별 / 직무별 / 평가축별 통계 시각화
+  - 운영 관측(Observability) 강화를 통해
+    시스템 품질 및 멀티모달 확장 기반을 마련한다.
+
+- **Scope (초기 정의)**:
   - 평균 점수
   - 합격률
   - 평가축별 약점 분포
-  - Query 전용 확장
+  - Query 전용 확장 계층 설계
+  - 세션/모델/캐시 관련 운영 지표 확장 가능 구조
+
 - **Out of Scope**:
   - 외부 BI 연동
+  - UI 디자인 고도화
+
 - **Dependencies**:
   - TASK-026 완료
+  - TASK-027 완료
 
 ---
 ## HOLD
+
 ### TASK-016 TTS Provider (Text → Speech)
 - **Goal**:
-  - 면접 결과 또는 실시간 피드백을 음성으로 출력하기 위한 TTS Provider 계층 준비
+  - 면접 질문 또는 피드백을 음성으로 출력하기 위한 TTS Provider 계층 준비
 - **Scope (예정)**:
   - TTS Provider 인터페이스 정의
   - Mock 기반 Text → Speech 변환 파이프라인
 - **보류 사유**:
-  - TTS는 “실시간 면접 진행 플로우(세션/스트림/비동기/토큰 전략)” 확정 이후에 붙이는 것이 비용 대비 효율적
-  - 현재 Phase에서는 결과 소비 계약 고정 이후, **실시간 플로우 오케스트레이션 설계/구현**이 우선
+  - Phase 9는 COMPLETE이며(Redis CP0~CP4 🔒 LOCKED), 현재 최우선은 Phase 10(TASK-028) 운영 통계/관측 계층이다.
+  - TTS는 실시간/Streaming 오케스트레이션과 결합될 가능성이 높아 별도 계약 하에 진행해야 한다.
+  - Engine 경계 및 Snapshot 계약을 침해하지 않도록, 통계/관측 기반의 안정성 데이터 확보 이후 재개한다.
 - **재개 조건**:
-  - 리포트 저장 / 이력 관리 완료 (TASK-013)
-  - 리포트 조회 API 노출 완료 (TASK-014)
-  - UI 소비 규격 정의 완료 (TASK-015)
-  - **실시간 면접 플로우 설계/범위가 문서로 고정된 이후**
+  - TASK-028 완료(운영 통계/관측 계층 확정)
+  - Streaming 아키텍처(TTS 포함) 범위가 별도 문서/계약으로 고정된 이후
