@@ -75,133 +75,104 @@
 
 ---
 
-# Phase 6. Service Layer & API Boundary 고정 (TASK-022 ~ TASK-023)
+# Phase 6. Service Layer & API Boundary 확정 (TASK-022 ~ TASK-023)
 
-## 5. Service & API Layer Stabilization
+## 5. Service Layer (TASK-022)
 
-- Service Layer / Engine Layer 책임 분리 고정
-- Command / Query 분리 계약(CQRS) 적용 완료
-- DTO / Mapper 분리 적용 완료
-- Fail-Fast 동시성 정책 적용 완료
-- API Guardrail(AST) 적용 완료
-- Engine 경계 침범 없음 검증 완료
-- Scope Lock 위반 없음 확인
+- API → Service → Engine 단일 Command 경로 강제 확인
+- 상태 변경은 반드시 Engine 메서드를 통해서만 수행됨 검증 완료
+- DTO ↔ Domain 완전 분리 (명시적 Mapper 적용) 확정
+- Command / Query 분리(CQRS) 구조 고정
+- session_id 단위 Fail-Fast 동시성 정책 적용 완료
+- Admin Query는 Read-Only Query Service 경로로 분리
 
-📌 **Phase 6 종료 상태**
-- Service/API 경계 고정
-- Engine 정책 주체 고정
-- 동시성 및 예외 처리 정책 확정
+## 6. API Layer & Runtime Entry (TASK-023)
+
+- API Layer는 Service Layer의 Entry Adapter로만 동작
+- Engine/Repository 직접 접근 없음 (AST Guardrail 검증 완료)
+- 상태 전이 / Lock 정의 / Freeze 해석을 API에서 수행하지 않음
+- 병렬 요청 경쟁 시 1건 423 즉시 반환 검증 완료
+- 구조 계약 위반 방지 Guardrail 확보
+
+📌 **Phase 6 기준선**
+- API ↔ Service ↔ Engine 경계 고정
+- Fail-Fast 동시성 정책 확정
+- 외부 런타임 진입점 안정화 완료
 
 ---
 
 # Phase 7. Question Bank & RAG Fallback Integration
 
-## 6. Question Bank 구조 정비 (TASK-024)
-
-- Source 계층 정의(STATIC / GENERATED ORIGIN) 계약 확정
-- Soft Delete 정책 도입 및 후보군 필터링 검증 완료
-- Session Snapshot 독립성 유지 확인
-- Engine/Service 경계 침범 없음 검증 완료
-- Generated 질문의 Session-local 자산 정책 확정
-- Static Question Bank 승격(Promotion) 금지 정책 유지
-
----
-
-## 7. RAG Fallback Engine 통합 (TASK-025)
-
-- SessionEngine 단일 판단 주체(Fallback Authority) 계약 확정
-- 3-Tier 전략 구현 검증 완료:
-  - RAG 생성 시도
-  - Static QBank Fallback
-  - Emergency Safe Fallback
-- Fallback은 상태 전이(State Contract)를 유발하지 않음 검증 완료
-- Snapshot Value Object 불변성 유지 확인
-- Generated 질문은 Snapshot에 Value로 고정됨 검증 완료
-- Snapshot Independence 검증 완료 (Provider 변경 시 기존 세션 영향 없음)
-- Freeze 계약 침범 없음 확인
-- Engine 외부에서 질문 Source 변경 경로 없음 확인
-- 동시성(File Lock 기반) 보호 유지 확인
-- Contract Stability 재검증 완료 (위반 없음)
-
-📌 **Phase 7 현재 상태**
-- Question Source 이중 구조 안정화
-- RAG 실패 시 면접 흐름 Always-On 보장
-- Engine 권한 단일화 유지
-- Snapshot 오염 없음 (metadata controlled openness 상태)
-- 전체 계약(Freeze / Snapshot / State Contract) 보호 유지
-
-
-# Phase 6. Service & API Boundary 확정
-
-## 5. Service Layer (TASK-022)
-
-- API → Service → Engine 단일 Command 경로 강제 확인
-- 상태 변경은 반드시 Engine 메서드를 통해서만 수행됨 확인
-- DTO와 Domain Entity 완전 분리(명시적 Mapper 적용) 검증 완료
-- Concurrency 정책:
-  - session_id 단위 File/Memory Lock 적용
-  - Command 유스케이스에만 적용
-  - Query는 Lock 없이 Snapshot 기반 조회
-  - Fail-Fast 정책 동작 확인
-- Admin Query는 Query Service 경로로 분리됨 확인
-
----
-
-## 6. API Layer & Runtime Entry (TASK-023)
-
-- API Interface Layer가 Service Layer의 Entry Adapter로 동작함 검증 완료
-- Application Bootstrap 및 Composition Root 단일 진입 경계 유지 확인
-- API Layer에서 Engine/Repository 직접 접근 없음(AST 기반 정적 분석 검증 완료)
-- API Layer는 상태 전이 판단/Lock 정의/Freeze 해석을 수행하지 않음 확인
-- DTO → Response Schema 명시적 매핑 유지 확인
-- 실제 병렬 API 요청 2건 경쟁 상황에서 1건 즉시 423 반환 검증 완료 (Hardening Patch v2)
-- AST 기반 Guardrail 적용으로 구조 계약 위반 방지 체계 확보
-
-📌 **Phase 6 종료 상태**
-- 외부 런타임 진입점 확정
-- API ↔ Service ↔ Engine 경계 고정
-- Fail-Fast 동시성 정책 실효성 검증 완료
-- 구조 계약 위반 방지 가드레일 확보
-
----
-
-# Phase 7 기반 정비 완료
-
 ## 7. Question Bank Layer (TASK-024)
 
-- `packages/imh_qbank` 신설 (Domain / Repository / Service 구조 확정)
-- Source 계층 정의 (Static Origin / Generated Origin)
-- Soft Delete 정책 도입 (status=DELETED, 신규 세션 후보군 자동 제외)
-- Session Snapshot과 완전 독립(Value Object 기반) 구조 검증 완료
-- QBank 변경이 과거 세션 스냅샷에 영향을 주지 않음 확인
-- Hard Delete 경로 부재 확인
-- Engine / Service 경계 침범 없음 검증 완료
-- `verify_task_024.py` 검증 PASS
+- `packages/imh_qbank` 구조 확정 (Domain / Repository / Service)
+- Source 계층 정의 (STATIC / GENERATED ORIGIN)
+- Soft Delete 정책 도입 (status=DELETED → 신규 세션 자동 제외)
+- Snapshot과 완전 독립(Value Object) 구조 검증 완료
+- Hard Delete 경로 없음 확인
+- Engine/Service 경계 침범 없음 검증 완료
 
-📌 **Phase 7 진입 준비 상태**
-- 질문 자산 레이어 안정화 완료
-- RAG Fallback 엔진 통합 가능 구조 확보
-- Generated Origin 확장 기반 마련
-- Snapshot 계약 침범 없는 동적 질문 통합 준비 완료
+## 8. RAG Fallback Engine 통합 (TASK-025)
+
+- SessionEngine 단일 판단 주체(Fallback Authority) 고정
+- 3-Tier 전략 검증 완료:
+  1) RAG 생성 시도
+  2) Static QBank Fallback
+  3) Emergency Safe Fallback
+- Fallback은 상태 전이를 유발하지 않음 검증 완료
+- Generated 질문은 Snapshot에 Value로 고정
+- Snapshot Independence 검증 완료
+- Freeze / Snapshot / State Contract 침해 없음 확인
+- Contract Stability 재검증 완료
+
+📌 **Phase 7 기준선**
+- Question Source 이중 구조 안정화
+- Engine 권한 단일화 유지
+- Snapshot 오염 없음
+- 핵심 계약(Freeze / Snapshot / State Contract) 보호 유지
 
 ---
 
-# 검증 방법 및 기준
+# Phase 8. PostgreSQL 영속화 전환 완료 (TASK-026)
 
-- 모든 TASK는 `scripts/verify_task_xxx.py` 기반 계약 동작 검증 수행
-- 검증 스크립트는 정책 정의를 대체하지 않으며, 계약 위반 여부를 확인하는 보조 도구로 사용
-- 구조 계약(계층 분리, DTO 분리, 상태 변경 경로 제한)은 코드 리뷰 및 설계 검증을 통해 추가 확인
+- Primary Data Store: PostgreSQL (Read / Write)
+- Dual Write 전략 유지 (Postgres Primary + Memory Secondary)
+- Restart Replay / Rollback Safety 검증 완료
+- Snapshot 영속화 전략 확정
+- 기존 파일 기반 구조 완전 전환 완료
+
+📌 **Phase 8 기준선**
+- PostgreSQL 단일 권위 저장소 확정
+- Memory는 Secondary / Rollback Safety 용도로만 유지
+- Write Path Switch 완료
+- 계약 불변 유지
 
 ---
 
-# 용어 정리
+# Phase 9. Redis Introduction (Runtime & Control)
 
-- **score**: 루브릭 기반 점수 산출 결과
-- **report**: InterviewReport 산출물(상세 분석 결과)
-- **result**: 최종 합/불 또는 조회 필터에서 사용하는 결과 상태
-- **state**: 세션 진행 상태(APPLIED / IN_PROGRESS / COMPLETED / INTERRUPTED / EVALUATED)
+## 9. Redis Baseline (TASK-027 CP0)
 
+- **Status**: ✅ VERIFIED / LOCKED
+- **Scope**:
+  - Runtime Mirror (PG → Redis 단순 복제)
+  - Distributed Lock (interview_id 단위)
+  - Idempotency Guard (request_id 기반)
+- **Immutable Contracts**:
+  - PostgreSQL Only Source of Truth
+  - Write Order: PG Commit → Redis Mirror
+  - No Write-Back (Redis → PG 금지)
+  - Redis Down 시 Fail-Fast Reject
+  - Hydration = Mirror 복원 (상태 변경 아님)
+  - Pause는 Operational Flag (State Transition 아님)
 
+📌 **Phase 9 현재 기준선**
+- Redis는 Authority가 아니다.
+- Redis는 Control + Runtime Layer에만 한정된다.
+- Snapshot / Freeze / State Contract 침해 없음.
+- Restart Replay 안전성 유지.
+
+---
 
 ## 1. 프로젝트 목적 (확정)
 
@@ -216,147 +187,116 @@
 ---
 ## 2. 현재 개발 단계
 
-- 상태: **Phase 8 진행 중 (PostgreSQL 전환 완료 / Redis 도입 대기)**
-
-  - Phase 5 완료: End-to-End 인터뷰 실행 아키텍처 통합 구현 완료 (TASK-021)
-    - 세션 엔진 통합
-    - Job Policy Freeze at Publish 계약 고정
-    - Snapshot Double Lock (Job / Session) 구조 확정
-    - 상태 전이(State Contract) 기반 실행 흐름 고정
-    - 관리자 조회 계층(Admin Query Layer) 통합 완료
-    - Snapshot 기반 Evaluation / Admin Query 정합성 확보
-
-  - Phase 6 완료: Service Layer & API Boundary 확정
-    - DTO/Mapper 분리
-    - Command/Query 분리
-    - Fail-Fast 동시성 정책 적용
-    - Runtime Entry 확정
-    - API Guardrail(AST) 적용
-    - API → Service → Engine 단일 Command 경로 고정
-    - Engine 외부 정책 판단 경로 차단
-
-  - Phase 7 완료:
-    - 질문은행 구조 정비 완료 (TASK-024)
-      - Source 계층 정의 (Static Origin / Generated Origin)
-      - Soft Delete 정책 도입
-      - Session Snapshot과 완전 독립(Value Object) 구조 검증
-      - Engine/Service 경계 침범 없음 확인
-
-    - RAG Fallback 엔진 통합 완료 (TASK-025)
-      - SessionEngine 단일 판단 주체(Fallback Authority) 고정
-      - 3-Tier 전략 구현:
-        1) RAG 생성 시도
-        2) Static QBank Fallback
-        3) Emergency Safe Fallback
-      - Fallback은 상태 전이를 유발하지 않음 검증 완료
-      - Snapshot Value Object 불변성 유지 검증 완료
-      - Generated 질문은 Snapshot에 Value로 고정됨
-      - Freeze 계약 침범 없음 확인
-      - Snapshot Independence 검증 완료
-      - 동시성(File Lock 기반) 보호 유지 확인
-      - Contract Stability 재검증 완료 (위반 없음)
-
-  - (설계 기준)
-    - 인터뷰 정책 스펙(INTERVIEW_POLICY_SPEC) 고정
-    - 통합 실행 아키텍처 기준 문서 고정
-    - Phase 5 핵심 계약은 변경 불가 기준선으로 유지
-    - Engine 단일 정책 판단 구조 확정
+- 상태: **Phase 9 진행 중 (Redis Baseline CP0 LOCKED)**
 
 ---
 
-### 완료 항목 (Phase 1 ~ Phase 7 결과)
+### Phase 5 완료: End-to-End 실행 아키텍처 고정 (TASK-021)
 
-- Analysis 결과를 입력으로 받아 정량 점수 및 평가 근거(Evidence)를 산출하는 Rule-based Evaluation Engine 구현 및 검증 완료 (TASK-011)
-- 평가 결과를 사용자 친화적 리포트(JSON)로 변환하는 Reporting Layer 구현 완료 (TASK-012)
-- 리포트의 저장 및 이력 관리 계층 구현 완료 (TASK-013)
-  - FileHistoryRepository 기반(파일 저장)으로 검증 완료
-- 리포트 조회 API 노출 및 검증 완료 (TASK-014)
-- UI / Client 관점의 리포트 소비 규격(Contract) 정의 완료 (TASK-015)
-
-- 인터뷰 세션 상태 전이 및 모드 정책(Actual / Practice) 엔진 구현 및 검증 완료 (TASK-017 ~ TASK-018)
-- Job Policy Engine 및 Immutable Evaluation Schema 계약 구현 및 검증 완료 (TASK-019)
-- Admin Query Layer(Federated Search, Snapshot 기반 조회) 구현 및 검증 완료 (TASK-020)
-- End-to-End 인터뷰 실행 아키텍처 통합 구현 완료 (TASK-021)
-
-- Service Layer 및 DTO 분리 구조 확정 완료 (TASK-022)
-  - API ↔ Domain 완전 격리
-  - Command(Lock) / Query(Bypass) 분리 구조 확정
-  - session_id 단위 Fail-Fast 동시성 제어 적용
-  - 상태 변경은 Engine 메서드를 통해서만 수행
-
-- API 인터페이스 계층 및 Runtime Entry 확정 완료 (TASK-023)
-  - API → Service → Engine 단일 Command 경로 고정
-  - 병렬 API 요청 경쟁 기반 Fail-Fast 검증 완료 (Hardening Patch v2)
-  - AST 기반 Import Guardrail 적용 완료
-  - Phase 5 계약(Freeze / Snapshot / State Contract) 침범 없음 확인
-
-- 질문은행 구조 정비 완료 (TASK-024)
-  - `packages/imh_qbank` 신설 (Domain / Repository / Service)
-  - Source 계층 분리 및 메타데이터 구조 정의
-  - Soft Delete 정책 도입 및 후보군 자동 제외 보장
-  - Snapshot과 완전 독립(Value Object) 구조 확정
-  - 과거 세션 무결성 보존 검증 완료
-
-- RAG Fallback 엔진 통합 완료 (TASK-025)
-  - Engine 단일 판단 주체 확정
-  - Generated / Static Source 분리 유지
-  - Emergency Safe Fallback 보장
-  - Snapshot 오염 없음 (Controlled Metadata 상태)
-  - Contract Stability 검증 완료
-
-📌 **현재 기준선**
-- Phase 5 핵심 계약 고정 (Freeze / Snapshot / State Contract)
-- Phase 6 서비스/외부 경계 고정
-- Phase 7 (질문은행 및 RAG 통합) 진입 준비 완료
-
-- `packages/imh_core/infra/` (PostgreSQL): ✅ DONE
-  - TASK-026: PostgreSQL 도입 완료
-    - `PostgreSQLSessionRepository`, `PostgreSQLJobRepository`, `PostgreSQLHistoryRepository` 구현
-    - **Write Path Switch 완료**: `WRITE_PATH_PRIMARY=POSTGRES`
-    - **Dual Write 유지**: Memory Repository는 Secondary Write 및 Rollback Safety용으로 유지
-    - 기존 데이터(Session/Report) 마이그레이션 완료
-    - Restart Replay / Rollback Capability 검증 완료
-
-📌 **현재 기준선 (Phase 8)**
-- **Primary Data Store**: PostgreSQL (Read/Write)
-- **Secondary**: Memory (Dual Write / Failover)
-- **Operating Mode**:
-  - Read: PostgreSQL (Canary 100%)
-  - Write: PostgreSQL (Primary) + Memory (Secondary)
-- **Dual Write Strategy**:
-  - TASK-027 (Redis) 도입 및 안정화 시점까지 유지
-  - 목적: Hot Swap Rollback Safety 보장
+- 세션 엔진 통합 완료
+- Job Policy Freeze at Publish 계약 고정
+- Snapshot Double Lock (Job / Session) 구조 확정
+- 상태 전이(State Contract) 기반 실행 흐름 고정
+- 관리자 조회 계층(Admin Query Layer) 통합 완료
+- Snapshot 기반 Evaluation / Admin Query 정합성 확보
 
 ---
 
-### 미포함 항목 (향후 단계)
+### Phase 6 완료: Service Layer & API Boundary 확정 (TASK-022 ~ TASK-023)
 
-- **Phase 8: DB 정식 전환 (PostgreSQL / Redis)**
-  - 파일 기반 저장소 → RDB 전환
-  - 세션 상태 관리 Redis 도입
-  - Snapshot 영속화 전략 확정
-  - Metadata size guard 도입 고려
-
-- **Phase 9: 운영 통계 및 고도화**
-  - 관리자 통계 대시보드
-  - Query 전용 확장
-  - 질문 품질 점수 도입 가능성 검토
-
-- **기타**
-  - 실제 프론트엔드 UI 구현(면접자/관리자 화면)
-  - 외부 인증/권한 체계(SSO, OAuth 등)
-  - 운영 환경 배포/모니터링/로그 집계 인프라
-  - 고도화된 평가 모델(ML 기반, CV/Audio 모델 교체 등)
-  - Streaming 기반 LLM 연동은 구조 검토 후 별도 Phase로 분리
+- DTO / Mapper 완전 분리
+- Command / Query 분리(CQRS) 계약 고정
+- Fail-Fast 동시성 정책 적용
+- API → Service → Engine 단일 Command 경로 고정
+- Engine 외부 정책 판단 경로 차단
+- AST 기반 Guardrail 적용 완료
+- Runtime Entry 경계 확정
 
 ---
 
-### 현재 Phase의 목적 (Phase 8: DB 전환 및 고도화)
+### Phase 7 완료: Question Bank & RAG Fallback Integration (TASK-024 ~ TASK-025)
 
-- **PostgreSQL 전환(완료)**: 파일 기반 저장소 한계 극복, 트랜잭션 안전성 확보
-- **Redis 도입(예정)**: 실시간 세션 상태 관리 분리 (TASK-027)
-- **Snapshot 영속화**: JSONB 기반 유연성 + RDB 무결성 결합 전략 안착
-- **Dual Write 제거**: Redis 도입 후 최종 아키텍처 완성 시점 결정
+#### Question Bank 정비
+- Source 계층 정의 (Static Origin / Generated Origin)
+- Soft Delete 정책 도입
+- Snapshot과 완전 독립(Value Object) 구조 확정
+- Engine/Service 경계 침범 없음 검증 완료
+
+#### RAG Fallback 통합
+- SessionEngine 단일 판단 주체(Fallback Authority) 고정
+- 3-Tier 전략 구현:
+  1) RAG 생성
+  2) Static QBank Fallback
+  3) Emergency Safe Fallback
+- Fallback은 상태 전이를 유발하지 않음
+- Snapshot Value Object 불변성 유지
+- Freeze 계약 침범 없음 확인
+- Snapshot Independence 검증 완료
+- Contract Stability 재검증 완료
+
+---
+
+### Phase 8 완료: PostgreSQL 영속화 전환 (TASK-026)
+
+- Primary Data Store: PostgreSQL (Read / Write)
+- Write Path Switch 완료 (`WRITE_PATH_PRIMARY=POSTGRES`)
+- Dual Write 유지 (Postgres Primary + Memory Secondary)
+- Restart Replay / Rollback Safety 검증 완료
+- Snapshot 영속화 전략 확정
+- 기존 File 기반 저장소 전환 완료
+
+📌 **Phase 8 기준선**
+- PostgreSQL이 단일 권위 저장소
+- Memory는 Secondary / Rollback Safety 용도로만 유지
+- 핵심 계약(Freeze / Snapshot / State Contract) 유지
+
+---
+
+# Phase 9. Redis Introduction (Runtime & Control)
+
+## TASK-027 / CP0 (LOCKED)
+
+- **Status**: VERIFIED → LOCKED
+- **Scope**:
+  - Runtime Mirror (PG → Redis 단순 복제)
+  - Distributed Lock (`interview_id` 단위)
+  - Idempotency Guard (`request_id` 기반)
+- **Immutable Contracts**:
+  - PostgreSQL Only Source of Truth
+  - Write Order: PG Commit → Redis Mirror
+  - No Write-Back (Redis → PG 금지)
+  - Redis Down 시 Fail-Fast Reject
+  - Hydration = Mirror 복원 (상태 변경 아님)
+  - Pause는 Operational Flag (State Transition 아님)
+
+📌 **Phase 9 현재 기준선**
+- Redis는 Authority가 아니다.
+- Redis는 Control + Runtime Layer 역할만 수행한다.
+- Snapshot / Freeze / State Contract 침해 없음.
+- Restart Replay / Rollback Safety 유지.
+
+---
+
+# 향후 단계 (NOT STARTED)
+
+## Phase 9+: Redis Cache Extension (CP1 ~ CP4)
+
+- CP1: Projection Cache (Session View)
+- CP2: RAG Cache
+- CP3: Candidate Cache
+- CP4: Prompt Cache
+
+※ 모든 확장은 CP0 불변 계약을 침해하지 않는 범위에서만 수행한다.
+
+---
+
+# 현재 Phase의 목적 (Phase 9)
+
+- Redis Control Layer 안정화
+- Runtime Mirror 신뢰성 확보
+- Dual Write 제거 시점 판단을 위한 안전성 확보
+- CP1~CP4 확장을 위한 계약 기반 마련
+
 
 
 ## 3. 확정된 핵심 방향 (변경 금지)
@@ -510,6 +450,8 @@ IMH/IMH_Interview/
 - `packages/imh_core/`: ✅ DONE  
   - TASK-002 완료 (config / errors / dto)
   - 공통 로깅 기반 포함 (TASK-001)
+  - TASK-026: PostgreSQL Repository 구현 및 Primary Write Path 전환 완료
+  - TASK-027: Redis Control Layer 및 Runtime Mirror 도입 완료 (CP0 LOCKED)
 
 - `packages/imh_providers/`: ✅ DONE
   - TASK-003: Provider 인터페이스 + Mock 구조 확정
@@ -617,11 +559,13 @@ IMH/IMH_Interview/
     - Phase 5 계약은 변경 불가 기준선으로 고정
 
 📌 현재 상태 요약:
-- Phase 1 ~ Phase 6 완료
-- 외부 런타임 진입점 확정
-- Service / API 경계 고정
+- Phase 1 ~ Phase 9 (CP0) 완료
+- PostgreSQL Primary 전환 완료
+- Redis Runtime & Control Baseline 확정 (CP0 LOCKED)
+- API / Service / Engine 경계 고정
 - Snapshot / Freeze / State Contract 보호 상태 유지
-- Phase 7 (질문은행 및 RAG 통합) 진입 준비 완료
+- Redis는 Authority가 아닌 Control + Runtime Layer로 한정
+- CP1 (Projection Cache) 미시작
 
 
 ## 7. 로깅 / 기록 규칙 (중요)
@@ -698,26 +642,67 @@ IMH/IMH_Interview/
 
 ## ACTIVE
 
-### Phase 7 안정화 및 구조 고정 검증
+### Phase 9 안정화 (Redis Baseline 확정 이후)
 
-- RAG Fallback 통합 이후 운영 안정성 검증
-- Snapshot 메타데이터 통제 전략 유지
-- Engine 단일 정책 판단 구조 유지
-- Contract Stability 추가 검증
-- Phase 8 전환 대비 구조 리스크 점검
+- Redis Control Layer 안정성 재검증
+- Distributed Lock / Idempotency Guard 실환경 시나리오 점검
+- Hydration 신뢰성 검증 (Flush / 장애 / 재기동 상황)
+- Dual Write 제거 시점 판단을 위한 안정성 데이터 수집
+- CP0 불변 계약 침해 여부 지속 모니터링
+
+📌 현재 기준:
+- PostgreSQL = 단일 Source of Truth
+- Redis = Control + Runtime Mirror + Read Optimization Caches (CP1/CP2)
+- Write Order = PG → Redis (절대 순서 유지)
+- No Write-Back (Redis → PG 금지)
 
 ---
 
-## Next Approval Target (Phase 8 준비 단계)
+## Active Phase 9 Implementation
 
-- **DB 영속화 전환 설계 (PostgreSQL / Redis)**
-  - Snapshot 영속화 전략 정의
-  - Metadata Size Guard 정책 도입 여부 검토
-  - File 기반 저장소 → RDB 전환 설계
-  - Engine 계약 침범 없는 Repository 교체 전략 수립
+### TASK-027 / CP1: Projection Cache Implemented (LOCKED)
+- **Goal**: Redis Session View Projection 구축
+- **Status**: ✅ LOCKED (Verified & Frozen)
+- **Outcome**: 
+  - `SessionProjectionDTO` 정의 및 Redis Repo 구현
+  - `get_session_projection` Read-Through 전략 적용
+  - `Invalidate-First` 정책 준수 확인
+  - Redis Down 검증 완료
+  - PostgreSQL Authority 유지 (Projection은 Derived View)
+  - **Restriction**: CP2~CP4 작업 진행 중 CP1 구조 변경 금지.
 
-- **승인 절차**:
-  - `TASK-026_PLAN.md` (Phase 8 설계 문서)가 다음 에이전트의 첫 번째 목표가 된다.
+---
+
+### TASK-027 / CP2: RAG Cache Implemented (LOCKED)
+- **Goal**: 비용 최적화 및 Latency 단축
+- **Status**: ✅ LOCKED (Verified & Frozen)
+- **Outcome**: 
+  - `RAGCacheDTO` 정의 및 `RedisRAGRepository` 구현
+  - `CachedQuestionGenerator` Read-Through Decorator 적용
+  - Async Save & Graceful Fallback 구현
+  - Versioned Key & Dynamic TTL (`TTLContextResolver`) 적용 완료
+  - Cache Hit 시 SessionQuestion 재구성 (새 ID / SourceType / cached metadata)
+  - **Audit**: `docs/TASK-027_CP2_AUDIT_REPORT.md` Pass
+
+  - **Immutable Contracts**:
+    - **PG Authority**: Cache is NOT Logic Decision Source
+    - **Redis Role**: Read Optimization Only
+    - **Write Flow**: No Write-Back to PG
+    - **Safety**: Async Save & Graceful Degradation
+    - **Key Integrity**: 결과에 영향 주는 파라미터는 반드시 Key에 포함 (축소 금지)
+
+---
+
+## Next Approval Target (Phase 9 확장 단계)
+
+### TASK-027 / CP3: Candidate Pool Cache (Planned)
+- **Goal**: 질문 생성 후보군(Candidates) 캐싱
+- **Scope**: 
+  - `get_candidates` 최적화
+  - QBank Soft Delete 반영 전략
+- **Status**: Not Started
+
+
 
 ---
 
@@ -728,9 +713,9 @@ IMH/IMH_Interview/
 - **Goal**:
   - AI 면접 질문을 음성(TTS)으로 출력하기 위한 Provider 계층 준비
 - **보류 사유**:
-  - 질문 생성 계층(RAG Fallback) 구조는 확정되었으나,
-    실시간 면접 출력 흐름은 Phase 8 이후에 안정적으로 통합하는 것이 적절함
+  - Runtime 안정화(Phase 9 CP0) 우선
+  - Projection/Cache 전략(CP1~CP4) 구조 확정 전에는 출력 계층 확장 보류
 - **재개 조건**:
-  - DB 전환 이후 Snapshot 영속화 안정화
-  - Engine 경계 내 질문 생성 흐름 장기 안정성 검증 완료
+  - Redis 확장 단계(CP1~CP2) 안정화
+  - 세션 상태 관리 구조 장기 안정성 검증 완료
   - Streaming 전략 별도 승인 후 진행

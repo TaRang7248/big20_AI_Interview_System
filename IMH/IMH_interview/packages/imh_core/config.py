@@ -19,6 +19,14 @@ class IMHConfig(BaseSettings):
     # Checkpoint 4: Canary Rollout
     CANARY_ROLLOUT_PERCENTAGE: int = 1 
 
+    # TASK-027: Redis Configuration
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: str = None
+    # If provided, REDIS_URL takes precedence
+    REDIS_URL: str = None
+
     # Stage 3: Write Path Switch
     WRITE_PATH_PRIMARY: str = "MEMORY" # MEMORY or POSTGRES
     

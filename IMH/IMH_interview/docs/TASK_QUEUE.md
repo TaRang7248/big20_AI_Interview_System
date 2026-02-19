@@ -362,35 +362,63 @@
 
 ## ACTIVE
 
-### TASK-027 Redis 세션 상태 도입
+### TASK-027 Redis 세션 상태 및 캐시 계층 도입 (Checkpoint 기반 진행)
 - **Goal**:
-  - 실시간 세션 상태 및 락 관리를 안정화하고, Dual Write 제거 조건을 충족한다.
-- **Scope**:
-  - `RedisSessionRepository` 구현 (Hot State)
-  - `ConcurrencyManager` Redis 분산 락 전환
-  - 세션 타임아웃(TTL) 관리
-- **Dual Write Removal Condition**:
-  - Redis 도입 후 Postgres-only 모드에서의 안정성 검증 완료 시 제거 승인
-- **Out of Scope**:
-  - 클러스터링/고가용성 구성
-- **Dependencies**:
-  - TASK-026 (PostgreSQL) 완료
+  - 실시간 세션 상태 및 락 관리를 안정화하고,
+  - Projection / RAG Cache 계층을 구축하여 Read Optimization을 확정한다.
+  - Dual Write 제거 조건을 충족한다.
 
+- **Scope (CP0: Baseline)**: ✅ LOCKED
+  - `RedisRuntimeStore` (PG -> Redis Mirror)
+  - `RedisConcurrencyManager` (Fail-Fast Lock / Idempotency)
+  - State Contract 확정
+  - `verify_task_027.py` Pass
+
+- **Scope (CP1: Projection Cache)**: ✅ LOCKED
+  - `SessionProjectionDTO` / `RedisProjectionRepository`
+  - Read-Through Strategy
+  - Invalidate-First Policy
+  - Redis Down Fallback
+  - `verify_cp1.py` Pass
+
+- **Scope (CP2: RAG Cache)**: ✅ LOCKED
+  - `RAGCacheDTO` / `RedisRAGRepository`
+  - CachedQuestionGenerator Decorator
+  - Async Save
+  - Versioned Key Strategy
+  - Dynamic TTL (Authority 기반)
+  - `verify_cp2.py` Pass
+  - `TASK-027_CP2_AUDIT_REPORT.md` Pass
+
+- **Future CP (Not Started)**:
+  - CP3: Candidate Cache
+  - CP4: Prompt Composition Cache
+
+- **Dual Write Removal Condition**:
+  - Postgres-only 모드 안정성 검증 완료 후 승인
+
+- **Out of Scope**:
+  - Redis Cluster / HA 구성
+
+- **Dependencies**:
+  - TASK-026 완료
 
 ---
 
+## BACKLOG
+
 ### TASK-028 관리자 통계 대시보드
 - **Goal**:
-  - 공고별/직무별/평가축별 통계 시각화 기능 제공
+  - 공고별/직무별/평가축별 통계 시각화
 - **Scope**:
   - 평균 점수
   - 합격률
   - 평가축별 약점 분포
-  - Query 전용 확장 (Read Model 분리 고도화)
+  - Query 전용 확장
 - **Out of Scope**:
-  - 외부 BI 도구 연동
+  - 외부 BI 연동
 - **Dependencies**:
-  - TASK-026 (PostgreSQL) 완료
+  - TASK-026 완료
 
 ---
 ## HOLD

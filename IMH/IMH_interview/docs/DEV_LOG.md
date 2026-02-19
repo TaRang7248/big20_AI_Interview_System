@@ -825,3 +825,70 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
 
 ---
 
+## 2026-02-19
+
+### TASK-027 / CP1 Session Projection Cache Implemented
+- **요약**: Redis Session Projection Cache (CP1) 구현 완료. PostgreSQL을 Sole Authority로 유지하며, Redis는 Read-Only View(Projection)로만 사용.
+- **주요 구현**:
+    - `packages/imh_dto/projection.py`: UI 전용 `SessionProjectionDTO` 정의.
+    - `packages/imh_session/infrastructure/redis_projection_repository.py`: Redis 접근 로직 (TTL 30m, No-Lock Stampede Strategy).
+    - `packages/imh_service/mapper.py`: `to_projection_dto` 매퍼 추가.
+    - `packages/imh_service/session_service.py`: `get_session_projection` (Read-Through) 및 Invalidation Logic (Invalidate-First) 통합.
+- **검증 결과**:
+    - `scripts/verify_cp1.py`: **Pass (4 tests)**
+        1. **Cache Miss**: PG Load -> Redis Save -> Return 확인.
+        2. **Cache Hit**: PG Bypass -> Redis Return 확인.
+        3. **Invalidation**: Write(Submit Answer) -> Redis Key 삭제 확인.
+        4. **Redis Down**: Graceful Degradation (Log Warn + PG Fallback) 확인.
+- **Authority Contract 준수**:
+    - Projection은 오직 UI 조회를 위해서만 사용됨.
+    - Domain/Engine 로직은 Projection에 의존하지 않음 (PG Source 원칙).
+
+---
+
+### TASK-027 / CP2 RAG Result Cache Implemented
+- **요약**: RAG Result Cache (CP2) 구현 완료. 비용/지연 최적화 목적의 Read-Only Cache이며, Authority는 PostgreSQL 유지.
+- **주요 구현**:
+    - `packages/imh_dto/rag_cache.py`: `RAGCacheDTO` 정의 (Value Object).
+    - `packages/imh_session/infrastructure/redis_rag_repository.py`: Versioned Key 생성(`rag:{job}:{ver}:{hash}`) 및 TTL 정책(`calculate_ttl`) 구현.
+    - `packages/imh_service/cached_question_generator.py`: `CachedQuestionGenerator` Decorator 구현 (Read-Through pattern, Async Save).
+    - **Optimization**: `asyncio.create_task` 기반 Fire-and-Forget Save 전략 적용 (User Latency 우선).
+- **검증 결과**:
+    - `scripts/verify_cp2.py`: **Pass (5 tests)**
+        1. **Key Determinism**: Input/Params/Version 변경 시 Key 변경 확인 (Collision Safety).
+        2. **Cache Miss**: Real Generator 호출 -> Async Save 트리거 확인 (Fire-and-Forget).
+        3. **Cache Hit**: Real Generator 호출 없이 Cached Content 반환 및 SessionQuestion 재구성 확인.
+        4. **Redis Down**: Connection Error 시 Log Warn 후 Real Generator Fallback 확인 (Graceful Degradation).
+        5. **TTL Policy**: Traffic/Mode 조건에 따른 Dynamic TTL(24h/48h/1h) 계산 로직 확인.
+- **Authority Contract 준수**:
+    - RAG Cache는 Engine 의사결정에 사용되지 않음.
+    - Save 실패는 사용자 응답에 영향 없음 (Availability Priority).
+
+---
+
+#### TASK-027 / CP2 Dynamic TTL Implementation (Hardening)
+- **요약**: CP2 Dynamic TTL 적용. PostgreSQL Authority 기반의 `TTLContextResolver`를 도입하여 Service Layer 침범 없이 안전하게 TTL 결정 로직 구현.
+- **변경 사항**:
+    - `packages/imh_service/ttl_resolver.py`: `PostgresTTLResolver` 구현 (Active Candidate Count 조회).
+    - `packages/imh_service/cached_question_generator.py`: Resolver 주입 및 `calculate_ttl` 연동.
+- **검증 결과**:
+    - `scripts/verify_cp2.py`: **Pass (7 tests)**
+        1. **High Traffic**: Active Candidate > 100 → TTL 48h (172800s) 검증.
+        2. **Debug Mode**: Debug=True → TTL 1h (3600s) 검증.
+        3. **Resolver Failure**: DB Error → Safe Default 24h (86400s) Fallback 검증.
+- **Authority Protection**:
+    - Decorator는 DB를 직접 조회하지 않고, Resolver 인터페이스를 통해 안전하게 위임.
+    - Resolver는 SessionStateRepository(PG)를 사용하여 Active Count의 정합성 보장.
+
+### TASK-027 / CP2 LOCKED (RAG Cache & Cost Optimization)
+- **일자**: 2026-02-19
+- **상태**: **LOCKED**
+- **핵심 계약 요약**:
+    - **PostgreSQL Authority**: Cache is NOT for Engine Decisions.
+    - **Redis Role**: Read Optimization Only (Loss Tolerant).
+    - **Immutable Key**: Versioned Key (Job+Policy+Prompt+Input) ensures correctness.
+    - **No Write-Back**: Unidirectional Flow (PG -> Calc -> Redis).
+    - **Safety**: Async Save (Exception Tolerant) & Graceful Fallback.
+- **검증**: `scripts/verify_cp2.py` **PASS** (7 tests including Dynamic TTL)
+- **감사**: `docs/TASK-027_CP2_AUDIT_REPORT.md` (Authority & Layering Compliance Verified)
+

@@ -25,3 +25,14 @@ class ConfigurationError(IMHBaseError):
     """환경 설정 로딩/검증 실패 시 발생하는 예외"""
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         super().__init__(code="CONF_Error", message=message, details=details)
+
+class RedisConnectionError(IMHBaseError):
+    """Redis 연결 실패 시 발생하는 예외"""
+    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+        super().__init__(code="REDIS_CONN_FAIL", message=message, details=details)
+
+class LockAcquisitionError(IMHBaseError):
+    """분산 락 획득 실패 시 발생하는 예외 (Fail-Fast)"""
+    def __init__(self, resource_id: str, details: Optional[Dict[str, Any]] = None):
+        message = f"Failed to acquire lock for resource {resource_id}"
+        super().__init__(code="REDIS_LOCK_FAIL", message=message, details=details)
