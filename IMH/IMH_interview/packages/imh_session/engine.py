@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import Optional
 from .state import SessionStatus, SessionEvent, TerminationReason
 from .dto import SessionConfig, SessionContext, SessionQuestion, SessionQuestionType
@@ -35,7 +34,8 @@ class InterviewSessionEngine:
         self.history_repo = history_repo
         self.question_generator = question_generator
         self.qbank_service = qbank_service
-        self.pg_state_repo = pg_state_repo  # Cold storage for Hydration
+        # PostgreSQL Authority Repository (Required for TASK-030)
+        self.pg_authority_repo = pg_state_repo
         
         # Initialize Policy
         self.policy = get_policy(self.config.mode)
@@ -54,16 +54,19 @@ class InterviewSessionEngine:
             return existing
 
         # 2. Hot Storage Miss: Try PG Authority (Hydration)
-        if self.pg_state_repo is not None:
+        if self.pg_authority_repo is not None:
             try:
-                pg_context = self.pg_state_repo.get_state(self.session_id)
+                pg_context = self.pg_authority_repo.get_state(self.session_id)
                 if pg_context:
                     logger.info(
                         "Hydration: Restored session %s from PostgreSQL Authority.",
                         self.session_id
                     )
-                    # Write-through to Hot Storage so next call is fast
-                    self.state_repo.save_state(self.session_id, pg_context)
+                    # Mirror to Hot Storage after PG success (TASK-030 Flow)
+                    try:
+                        self.state_repo.save_state(self.session_id, pg_context)
+                    except Exception as me:
+                        logger.warning(f"Hydration Mirror failed: {me}. (Availability issue only)")
                     return pg_context
             except Exception as e:
                 logger.warning(
@@ -107,9 +110,9 @@ class InterviewSessionEngine:
                     source_metadata=result.metadata
                 )
             else:
-                logger.warning(f"RAG Generation Failed: {result.error}. Triggering Fallback.")
+                logger.warning("RAG Generation Failed: %s. Triggering Fallback.", result.error)
         except Exception as e:
-            logger.error(f"RAG Generation Exception: {e}. Triggering Fallback.")
+            logger.error("RAG Generation Exception: %s. Triggering Fallback.", e)
 
         # 3. Fallback to Static QBank (Secondary Strategy)
         # Fetch candidates
@@ -141,10 +144,10 @@ class InterviewSessionEngine:
     def start_session(self):
         """Transition from APPLIED to IN_PROGRESS."""
         if self.context.status != SessionStatus.APPLIED:
-            logger.warning(f"Session {self.session_id} cannot start from {self.context.status}")
+            logger.warning("Session %s cannot start from %s", self.session_id, self.context.status)
             return
         
-        logger.info(f"Starting session {self.session_id}")
+        logger.info("Starting session %s", self.session_id)
         self._update_status(SessionStatus.IN_PROGRESS)
         self.context.current_step = 1
         
@@ -153,7 +156,8 @@ class InterviewSessionEngine:
         self.context.current_question = next_q
         self.context.question_history.append(next_q)
         
-        self._commit_state()
+        # TASK-030: Single Atomic Commit (Authority -> Mirror)
+        self._atomic_commit()
 
     def process_answer(self, duration_sec: float):
         """
@@ -231,7 +235,8 @@ class InterviewSessionEngine:
         self.context.current_question = next_q
         self.context.question_history.append(next_q)
         
-        self._commit_state()
+        # TASK-030: Single Atomic Commit
+        self._atomic_commit()
 
     def _check_early_exit_signal(self) -> bool:
         """
@@ -244,23 +249,21 @@ class InterviewSessionEngine:
         """
         Transition to COMPLETED.
         """
-        logger.info(f"Terminating session {self.session_id}. Reason: {reason}")
+        logger.info("Terminating session %s. Reason: %s", self.session_id, reason)
         self._update_status(SessionStatus.COMPLETED)
-        self._finalize_persistence() # Sync to PostgreSQL
+        
+        # Final Authority Commit (Status and History)
+        self._atomic_commit()
 
     def interrupt_session(self, reason: TerminationReason):
         """
         Transition to INTERRUPTED.
-        Policy dictates if this is final or resumable (handled by resume_session).
         """
-        logger.warning(f"Interrupting session {self.session_id}. Reason: {reason}")
-        
-        # Policy Check: If terminate on interruption is required, we might treat it differently?
-        # Actually state is INTERRUPTED in both cases.
-        # But for Actual Mode, it effectively means "Stop", for Practice "Pause".
-        
+        logger.warning("Interrupting session %s. Reason: %s", self.session_id, reason)
         self._update_status(SessionStatus.INTERRUPTED)
+        
         self._finalize_persistence()
+        self._atomic_commit()
 
     def resume_session(self):
         """
@@ -268,27 +271,68 @@ class InterviewSessionEngine:
         Allowed only if Policy permits.
         """
         if self.context.status != SessionStatus.INTERRUPTED:
-             logger.warning(f"Cannot resume session {self.session_id} from {self.context.status}")
+             logger.warning("Cannot resume session %s from %s", self.session_id, self.context.status)
              return
 
         if not self.policy.can_resume_from_interruption():
-            logger.error(f"Policy Violation: Cannot resume session {self.session_id} in {self.policy.mode} mode.")
+            logger.error("Policy Violation: Cannot resume session %s in %s mode.", self.session_id, self.policy.mode)
             return
 
-        logger.info(f"Resuming session {self.session_id}")
+        logger.info("Resuming session %s", self.session_id)
         self._update_status(SessionStatus.IN_PROGRESS)
-        self._commit_state()
+        self._atomic_commit()
 
     def _update_status(self, new_status: SessionStatus):
+        """
+        TASK-030: Memory-only status update. 
+        Persistence is deferred to _atomic_commit.
+        """
         self.context.status = new_status
-        # Sync Hot State
-        self.state_repo.update_status(self.session_id, new_status)
-        # Sync Cold State (Immediate consistency required for State Transition)
-        self.history_repo.update_interview_status(self.session_id, new_status)
+        logger.debug("[Engine] Memory status updated: %s", new_status)
 
-    def _commit_state(self):
-        """Save context to Hot Storage."""
-        self.state_repo.save_state(self.session_id, self.context)
+    def _atomic_commit(self):
+        """
+        Authority Enforcement Contract (TASK-030):
+        1. PostgreSQL (Authority) First
+        2. Hot Storage (Mirror) Second
+        """
+        # --- Stage 1: PostgreSQL Authority Enforcement ---
+        if self.pg_authority_repo:
+            try:
+                # 1.1 Persist full context (status, history, etc in one transaction)
+                # PostgreSQLSessionRepository.save_state performs this atomically.
+                self.pg_authority_repo.save_state(self.session_id, self.context)
+                
+                # 1.2 Persist status redundantly only if history_repo is different from pg_authority_repo
+                # Actually, pg_authority_repo already updated the 'interviews' table.
+                # But history_repo might be tracking it separately?
+                # For baseline alignment, we also call history_repo.update_interview_status if it's not the same repo instance
+                if self.history_repo and self.history_repo != self.pg_authority_repo:
+                    self.history_repo.update_interview_status(self.session_id, self.context.status)
+                
+                logger.info("[Authority] PostgreSQL commit SUCCESS for %s", self.session_id)
+            except Exception as e:
+                logger.error("[Authority] PostgreSQL commit FAILED for %s: %s", self.session_id, e)
+                # Critical Failure: Authority mis-save must block Mirroring
+                raise
+        else:
+            logger.warning("[Authority] No PG Authority repo provided for %s. Persistence at risk.", self.session_id)
+
+        # --- Stage 2: Hot Storage Mirroring ---
+        try:
+             # Mirror to Hot Storage (Redis/Memory)
+             # This must happen only AFTER PG success.
+             self.state_repo.save_state(self.session_id, self.context)
+             
+             # Also sync status explicitly for backward compatibility if state_repo supports it independently
+             if hasattr(self.state_repo, 'update_status'):
+                 self.state_repo.update_status(self.session_id, self.context.status)
+
+             logger.info("[Mirror] Hot Storage update SUCCESS for %s", self.session_id)
+        except Exception as e:
+             # Mirroring failure is an 'Availability Issue'
+             logger.error("[Mirror] Hot Storage update FAILED for %s (Availability only): %s", self.session_id, e)
+             # We do NOT raise here to satisfy Authority First Resilience.
 
     def _finalize_persistence(self):
         """
@@ -307,5 +351,5 @@ class InterviewSessionEngine:
         """
         Execute Policy: MUST emit SILENCE_WARNING.
         """
-        logger.info(f"Event: {SessionEvent.SILENCE_WARNING} for {self.session_id}")
+        logger.info("Event: %s for %s", SessionEvent.SILENCE_WARNING, self.session_id)
         # In real impl, send to WebSocket/Client

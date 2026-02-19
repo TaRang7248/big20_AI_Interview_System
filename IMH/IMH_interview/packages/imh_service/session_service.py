@@ -131,15 +131,13 @@ class SessionService:
         )
         
         # 3. Start Session (State Transition: APPLIED -> IN_PROGRESS)
-        # This commits to PG internally
+        # TASK-030: engine.start_session() now performs Authority First Atomic Commit
         engine.start_session()
         
-        # CP0: Mirror Update (Write Order: PG -> Redis)
-        # Assuming engine.context is the latest state
-        self._sync_runtime_mirror(session_id, engine.context)
-
         # CP1: Invalidate Projection (New Session)
         self.projection_repo.delete(session_id)
+
+        # 4. Return DTO (Context is updated in engine.context)
 
         # 4. Return DTO (Context is updated in engine.context)
         return SessionMapper.to_dto(engine.context)

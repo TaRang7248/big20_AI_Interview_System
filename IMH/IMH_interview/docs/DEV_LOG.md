@@ -1069,3 +1069,26 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
 | Snapshot / Freeze 계약은 유지된다 | ✅ LOCKED |
 
 > TASK-028은 이것으로 종료된다. 다음 TASK는 별도 대화에서 시작한다.
+### TASK-030 상태 저장 원자성 및 PostgreSQL 권위 선행 보장 (Authority Enforcement)
+- **요약**: PostgreSQL을 유일한 권위(Single Source of Truth)로 확정하고, Redis Mirror 업데이트와의 원자성 및 가시성 장벽(Visibility Barrier)을 구현 완료.
+- **변경 사항**:
+    - `packages/imh_session/engine.py`:
+        - `_atomic_commit()` 구현: PostgreSQL(Authority) 선행 저장 후 Redis(Mirror) 후행 업데이트.
+        - `_update_status()`: 메모리 전이만 수행하도록 변경 (Persistence는 `_atomic_commit`으로 위임).
+        - 모든 상태 전이 메서드(`start_session`, `terminate_session`, `resume_session` 등)를 원자적 커밋 흐름으로 통합.
+        - `_load_or_initialize_context()`: Redis 미스 시 PostgreSQL로부터의 Hydration 로직 강화.
+    - `packages/imh_service/session_service.py`:
+        - 엔진 내부에서 미러링을 직접 수행함에 따라 중복된 `_sync_runtime_mirror` 호출 제거.
+        - `submit_answer`: 락(Lock) 획득 기간 내에 PG 저장 → Mirror 갱신 → Projection 무효화를 순차적으로 배치하여 가시성 장벽 구축.
+    - `scripts/verify_task_030.py`: 원자성(PG 실패 시 Mirror 차단) 및 회복탄력성(Mirror 실패 시에도 PG 성공 인정) 검증 스크립트 작성.
+- **검증 결과**:
+    - `python scripts/verify_task_030.py`: **ALL PASS**
+        1. **Normal Flow**: PG -> Redis 순서로 작업 기록 확인.
+        2. **PG Failure (Atomicity)**: PG 저장 실패 시 Redis Mirror 업데이트가 차단됨을 확인.
+        3. **Redis Failure (Resilience)**: Redis 저장 실패 시에도 PG 저장이 성공했다면 세션 성공으로 간주함을 확인.
+- **주요 설계 반영**:
+    - **Single Source of Truth**: PostgreSQL 수립 완료. Redis는 가용성 전용 Mirror로 정의.
+    - **Visibility Barrier**: 락 해제 시점까지 외부 관측 가능 데이터(Redis, Projection)의 동기화를 보장.
+    - **Projection Subset**: Projection 무효화가 Mirror 갱신 이후에 수행되어, 항상 PG 상태 이하를 유지함.
+- **로그 및 산출물**:
+    - [TASK-030_PLAN.md](TASK-030_PLAN.md) 준수 완료.

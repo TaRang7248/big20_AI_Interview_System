@@ -50,11 +50,14 @@
 - **완료된 단계**: Phase 0 ~ Phase 10 + Baseline Alignment (TASK-029)
 - **현재 주요 상태**:
   - **내부 테스트 한정 가능**: 감사 보고서(2026-02-19) 기준 핵심 계약 준수 확인
-  - **안정화 작업 대기 (BACKLOG)**: 외부 운영 승격 전 핵심 위험(R-1 ~ R-3) 보완 예정
-  - PostgreSQL Authority 실질 확정 및 Hydration 검증 완료
+  - **안정화 작업 진행**: 
+    - TASK-030 (Authority First) DONE
+    - TASK-031 (Snapshot Immutable) ACTIVE (현재 수행 대상)
+    - TASK-032 (tag_code Constraint) BACKLOG
+  - PostgreSQL Authority 선행 보장 및 원자성 강화 완료 (TASK-030)
   - Redis Runtime and Cache Layer 및 통계/관측 계층 구축 완료
 - **향후 계획**:
-  - Phase 10 안정화 패치(TASK-030~032) 수행 후 외부 운영 가능 상태로 전환
+  - Phase 10 안정화 패키지(TASK-031~032) 완료 후 외부 운영 가능 상태로 전환
 - **보류 사항**:
   - TASK-016 (TTS Provider): 스트리밍 확장 고려를 위해 HOLD 상태 유지.
 

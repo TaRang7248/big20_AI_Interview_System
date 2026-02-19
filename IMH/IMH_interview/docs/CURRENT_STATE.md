@@ -60,10 +60,13 @@
 - Isolation: Heavy Query 격리를 위한 MView 전략 및 물리적 서비스 분리 검증 완료.
 - Phase 10 Audit (2026-02-19): **내부 테스트 한정 운영 가능** 판정 (심층 감사 보고서 생성 완료).
 
-### 2.8 Phase 10 Stabilization (Mini-Patch) - BACKLOG
+### 2.8 Phase 10 Stabilization (Mini-Patch) - 진행 중
 - 목표: 외부 운영 승격을 위한 핵심 계약 취약점(R-1, R-2, R-3) 보완.
-- 외부 운영 승격 조건:
-  - PostgreSQL Authority 권위 선행 보장 및 원자성 강화 (R-1 제거)
+- 진행 제어 (TASK-030 완료):
+  - **TASK-030 (Authority First) 완료**: PostgreSQL 권위 선행 보장 및 원자적 커밋 흐름(`_atomic_commit`) 구현 완료. (R-1 제거)
+    - **핵심 성과**: Authority First / Atomic Commit / Visibility Barrier / Redis Mirroring Resilience / Projection Subset 보장.
+    - **검증**: `scripts/verify_task_030.py` PASS (EXIT 0, 단일 글로벌 타임라인 검증 포함).
+- 잔여 승격 조건:
   - DB 레벨 Snapshot Immutable 강제 및 UPSERT 갱신 경로 차단 (R-3 제거)
   - DB 레벨 tag_code 허용 값 제약 강화 (R-2 제거)
 
@@ -102,11 +105,9 @@
 ## 5. 현재 작업 섹션
 
 ### ACTIVE
-- 없음 (Phase 10 안정화 패치 대기 중)
+- TASK-031: Snapshot Immutable DB 강제 및 갱신 차단 (R-3 대응)
 
 ### BACKLOG
-- TASK-030: 상태 저장 원자성 및 PostgreSQL 권위 선행 보장 (R-1 대응)
-- TASK-031: Snapshot Immutable DB 강제 및 갱신 차단 (R-3 대응)
 - TASK-032: tag_code 허용 값 제약 및 무결성 강화 (R-2 대응)
 
 ### HOLD

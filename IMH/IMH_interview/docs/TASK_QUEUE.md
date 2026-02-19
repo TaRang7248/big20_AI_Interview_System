@@ -258,32 +258,22 @@
 
 ---
 
+### TASK-030 상태 저장 원자성 및 PostgreSQL 권위 선행 보장
+- Goal: PostgreSQL 쓰기 성공이 Hot Storage 반영보다 선행되도록 정렬하여 Authority 정합성 강화 (R-1 대응)
+- Scope: `InterviewSessionEngine` 원자적 커밋 흐름(`_atomic_commit`) 및 저장 순서 정비
+- Verification: python scripts/verify_task_030.py Pass (EXIT 0)
+
+---
+
+
 ---
 
 ### 2.2 Phase 10 Stabilization (BACKLOG)
 
 ---
 
-### TASK-030 상태 저장 원자성 및 PostgreSQL 권위 선행 보장
-- Purpose: PostgreSQL 쓰기 성공이 Hot Storage 반영보다 선행되도록 정렬하여 Authority 정합성 강화 (R-1 대응)
-- Scope: `InterviewSessionEngine._update_status` 저장 순서 및 예외 전파 로직
-- Acceptance Criteria:
-  - PostgreSQL 쓰기가 Hot Storage(Redis) 반영보다 먼저 실행됨
-  - PostgreSQL 쓰기 실패 시 Hot Storage 갱신이 중단됨을 검증
-  - `pg_state_repo` 미주입 시 경고 또는 가드 로직 확인
-  - python scripts/verify_task_030.py Pass
-- Status: BACKLOG
-
 ---
 
-### TASK-031 Snapshot Immutable DB 강제 및 갱신 차단
-- Purpose: 세션 스냅샷 데이터가 생성 이후 어떠한 경로로도 수정되지 않도록 DB 레벨 제약 강화 (R-3 대응)
-- Scope: `PostgreSQLSessionRepository` UPSERT SQL 및 schema 정의
-- Acceptance Criteria:
-  - `interviews` 테이블 UPSERT SQL에서 `job_policy_snapshot`이 UPDATE SET 대상에서 제외됨
-  - 세션 데이터 업데이트 후에도 기존 스냅샷 값이 변하지 않음을 검증
-  - python scripts/verify_task_031.py Pass
-- Status: BACKLOG
 
 ---
 
@@ -298,6 +288,11 @@
 
 ---
 ## ACTIVE
+
+### TASK-031 Snapshot Immutable DB 강제 및 갱신 차단
+- Goal: 세션 스냅샷 데이터가 생성 이후 어떠한 경로로도 수정되지 않도록 DB 레벨 제약 강화 (R-3 대응)
+- Scope: `PostgreSQLSessionRepository` UPSERT SQL 및 schema 정의
+- Verification: python scripts/verify_task_031.py Pass
 
 ---
 ## HOLD
