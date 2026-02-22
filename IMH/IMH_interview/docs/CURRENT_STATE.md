@@ -105,10 +105,8 @@
 ## 5. 현재 작업 섹션
 
 ### ACTIVE
-- TASK-031: Snapshot Immutable DB 강제 및 갱신 차단 (R-3 대응)
-
-### BACKLOG
-- TASK-032: tag_code 허용 값 제약 및 무결성 강화 (R-2 대응)
+- **TASK-031 (Snapshot Immutability)**: [DONE] L2/L3 Guards implemented & verified.
+- **TASK-032 (Phase 10 Stabilization)**: [Approved Backlog] - R-2 Integrity Hardening.
 
 ### HOLD
 - TASK-016 (TTS Provider): 스트리밍 아키텍처 연동 고려로 인해 일시 보류.

@@ -95,8 +95,9 @@ class PostgreSQLSessionRepository(SessionStateRepository):
             if hasattr(mode_value, 'value'):
                 mode_value = mode_value.value
             
+            # L2 Guard: Use fetchrow to inspect preserved state (RETURNING)
             # Upsert session
-            await conn.execute(
+            row = await conn.fetchrow(
                 """
                 INSERT INTO interviews (
                     session_id, user_id, job_id, status, mode,
@@ -112,14 +113,16 @@ class PostgreSQLSessionRepository(SessionStateRepository):
                 )
                 ON CONFLICT (session_id) DO UPDATE SET
                     status = EXCLUDED.status,
-                    job_policy_snapshot = EXCLUDED.job_policy_snapshot,
-                    session_config_snapshot = EXCLUDED.session_config_snapshot,
+                    -- L2/L3 Guard: Snapshots are EXCLUDED from update to enforce immutability
+                    -- job_policy_snapshot = EXCLUDED.job_policy_snapshot,
+                    -- session_config_snapshot = EXCLUDED.session_config_snapshot,
                     questions_history = EXCLUDED.questions_history,
                     answers_history = EXCLUDED.answers_history,
                     started_at = EXCLUDED.started_at,
                     completed_at = EXCLUDED.completed_at,
                     evaluated_at = EXCLUDED.evaluated_at,
                     updated_at = CURRENT_TIMESTAMP
+                RETURNING job_policy_snapshot, session_config_snapshot
                 """,
                 session_id,
                 getattr(context, 'user_id', None),
@@ -139,6 +142,29 @@ class PostgreSQLSessionRepository(SessionStateRepository):
             )
             
             logger.info(f"Session state saved: {session_id}")
+
+            # L2 Guard Verification: Check for Silent Preservation
+            if row:
+                input_policy = getattr(context, 'job_policy_snapshot', None)
+                input_config = getattr(context, 'session_config_snapshot', None)
+                
+                # Database returns dicts (via jsonb codec) OR strings (if codec inactive/json type)
+                db_policy = row['job_policy_snapshot']
+                if isinstance(db_policy, str):
+                    db_policy = json.loads(db_policy)
+                    
+                db_config = row['session_config_snapshot']
+                if isinstance(db_config, str):
+                    db_config = json.loads(db_config)
+                
+                # Check for unauthorized mutation attempt (Attempt Basis)
+                # Note: We compare the input object vs the preserved DB object.
+                if input_policy != db_policy or input_config != db_config:
+                    logger.error(
+                        f"L2 GUARD: Snapshot mutation attempt detected (Silent Preservation). "
+                        f"Session: {session_id}. "
+                        f"Input differs from Storage used. Update ignored."
+                    )
             
         except Exception as e:
             logger.exception(f"Failed to save session state {session_id}: {e}")

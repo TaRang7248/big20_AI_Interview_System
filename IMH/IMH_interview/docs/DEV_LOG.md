@@ -196,11 +196,16 @@
 - **검증 증거**:
     - `scripts/verify_task_008.py` 실행 시 임시 파일 삭제 로그(`Temporary Emotion file deleted`) 확인 및 Regression Test (001~009) All Pass.
 
+##- **2026-02-19**: [TASK-031] Implemented Snapshot Immutability Guards.
+  - L2 Guard: `PostgreSQLSessionRepository` excludes snapshots from `UPDATE` and logs unauthorized attempts.
+  - L3 Guard: Applied DB Trigger `check_snapshot_immutability` via `scripts/apply_snapshot_protection.py`.
+  - Verification: `verify_task_031.py` confirmed strict mutability rejection (L2 & L3).
+- **2026-02-19**: [TASK-031] Finalized Snapshot Immutability Plan (Contract Reinforced).
 ## 2026-02-10: TASK-010 Visual 분석 (MediaPipe) 구현
 Plan 수립
 - **요약**: MediaPipe 기반 시각 분석(시선, 포즈, 제스처) 모듈을 프로젝트 표준으로 흡수하기 위한 계획 문서 작성.
 - **변경 사항**:
-    - `docs/TASK-010_PLAN.md` 작성: "성공했던 구현의 재현 및 표준화"를 골자로 한 Phase 2 최종 분석 모듈 설계 방향 확정.
+    - `docs/TASK-010_PLAN.md`: "성공했던 구현의 재현 및 표준화"를 골자로 한 Phase 2 최종 분석 모듈 설계 방향 확정.
 - **주요 전략**:
     - **재현 기반(Reproduction)**: 과거 성공한 MediaPipe 연동 구조를 Phase 2 기준선으로 고정.
     - **안전 출력 중심**: 얼굴/신체 미검출(No Face) 시에도 안정적인 DTO 반환 보장.
