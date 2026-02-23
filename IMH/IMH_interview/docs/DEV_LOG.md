@@ -1113,3 +1113,26 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
 - **주요 설계 반영**:
     - **Sync/Async Boundary**: `SessionEngine` 등 기존 Sync 동기 모델을 유지한 채 Provider만 비동기로 분리.
     - **Single Responsibility**: `SessionService`가 트랜잭션을 전담, Engine은 정책만 판단.
+
+---
+
+### [2026-02-23] TASK-033: Interview Engine Performance Optimization & Model Comparison
+- **Phase 1: Context Size Optimization (Completed)**
+    - **Refactored `simulate_interview_flow`**: Replaced full chat history with a fixed-context structure (Job/Resume Summary, Running Summary, Recent 2 Turns).
+    - **Incremental Scoring**: Implemented turn-by-turn scoring with a Ledger system, preventing "End-of-interview" compute spikes.
+    - **Result**: Successfully prevented context window explosion; input token usage remained stable regardless of interview length.
+- **Phase 2: Compact Model Comparison (Verified)**
+    - **Mode: `interview_compact`**: 5-turn fixed flow (How, Why, Risk, Boundary/Summary).
+    - **Runtime Optimization (Token Capping)**:
+        - Diagnosis: High latency observed in first turn due to excessive output (model "chatting" instead of just questioning).
+        - Fix: Applied hard output caps via `max_tokens` / `num_predict` (Question: 96, Score: 192).
+        - Result: Turn latency dropped from **24s** to **<2s** for exaone3.5:2.4b (approx. 12x speedup).
+- **Detailed Benchmarking Results (On-Prem vs. Cloud)**:
+    - **exaone3.5:2.4b**: **Best Performer.** Q-latency 1.6s, S-latency 1.8s. Highly stable and fast.
+    - **timHan/llama3.2korean**: Fast and stable. Good balance for Korean context.
+    - **cookieshake**: Stable questioning, but prone to verbose reasoning without token caps.
+    - **kwangsuklee/Qwen3-kor**: **CRITICAL FAILURE.** Questioning is okay, but **100% failure rate in JSON scoring**. Inept at following structured output constraints.
+    - **gpt-4o-mini**: Fastest (1.1s Q-latency), flawless JSON adherence.
+- **Key Findings**:
+    - Small on-prem models (4B-8B) require strict output token caps and "Preamble-free" instructions to maintain real-time performance.
+    - Models show significant variance in "Instruction Following" for JSON output; choice of scoring model is more critical than questioning model.

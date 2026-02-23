@@ -1,0 +1,6 @@
+provider: ollama
+models:
+  - cookieshake/a.x-4.0-light-imatrix:iq3_m
+  - kwangsuklee/Qwen3-kor-4B-Q4_K_M:latest
+  - timHan/llama3.2korean3B4QKM:latest
+  - exaone3.5:2.4b

@@ -19,7 +19,7 @@ class OllamaLLMProvider(ILLMProvider):
         self.model_name = model_name
         self.base_url = base_url.rstrip('/')
         
-    async def chat(self, messages: List[LLMMessageDTO], system_prompt: Optional[str] = None) -> LLMResponseDTO:
+    async def chat(self, messages: List[LLMMessageDTO], system_prompt: Optional[str] = None, max_tokens: Optional[int] = None) -> LLMResponseDTO:
         url = f"{self.base_url}/api/chat"
         
         # Prepare messages
@@ -36,14 +36,15 @@ class OllamaLLMProvider(ILLMProvider):
         payload = {
             "model": self.model_name,
             "messages": ollama_messages,
-            "stream": False
+            "stream": False,
+            "options": {"num_predict": max_tokens} if max_tokens else {}
         }
         
         logger.debug(f"Sending request to Ollama ({self.model_name}): {len(ollama_messages)} messages")
         
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(url, json=payload, timeout=60.0) as resp:
+                async with session.post(url, json=payload, timeout=aiohttp.ClientTimeout(total=300)) as resp:
                     resp.raise_for_status()
                     data = await resp.json()
                     

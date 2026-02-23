@@ -1,0 +1,1987 @@
+{
+  "metadata": {
+    "timestamp": "2026-02-23T16:49:52.253476",
+    "iterations": 10,
+    "temperature": 0.0
+  },
+  "results": {
+    "kwangsuklee/Qwen3-kor-4B-Q4_K_M": {
+      "direct_reasoning": {
+        "success": true,
+        "points": 0
+      },
+      "strict_json": {
+        "success_rate": 1.0,
+        "pollution_rate": 0.0,
+        "failure_rate": 0.0
+      },
+      "e2e": {
+        "S1": [
+          {
+            "latency_total": 33.32216811180115,
+            "turn_latency": 8.330542027950287,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 5688.9190673828125,
+                "s_ms": 4402.518510818481
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3697.8585720062256,
+                "s_ms": 4344.783306121826
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3261.929750442505,
+                "s_ms": 4324.647426605225
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3276.1056423187256,
+                "s_ms": 4324.257135391235
+              }
+            ],
+            "verdict": "fail"
+          },
+          {
+            "latency_total": 31.101574659347534,
+            "turn_latency": 7.7753936648368835,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3453.516960144043,
+                "s_ms": 4341.085433959961
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3709.977865219116,
+                "s_ms": 4344.85387802124
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3271.549701690674,
+                "s_ms": 4342.383861541748
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3292.4880981445312,
+                "s_ms": 4344.64955329895
+              }
+            ],
+            "verdict": "fail"
+          }
+        ],
+        "S2": [
+          {
+            "latency_total": 31.728333473205566,
+            "turn_latency": 7.932083368301392,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3459.383010864258,
+                "s_ms": 4348.015546798706
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3715.9481048583984,
+                "s_ms": 4487.226486206055
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3393.32914352417,
+                "s_ms": 4460.984706878662
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3386.967897415161,
+                "s_ms": 4474.843740463257
+              }
+            ],
+            "verdict": "fail"
+          },
+          {
+            "latency_total": 32.141201972961426,
+            "turn_latency": 8.035300493240356,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3564.4822120666504,
+                "s_ms": 4475.950717926025
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3826.9636631011963,
+                "s_ms": 4467.142105102539
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3391.890525817871,
+                "s_ms": 4494.31037902832
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3409.6555709838867,
+                "s_ms": 4509.202480316162
+              }
+            ],
+            "verdict": "fail"
+          }
+        ],
+        "S3": [
+          {
+            "latency_total": 33.182127237319946,
+            "turn_latency": 8.295531809329987,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3834.1660499572754,
+                "s_ms": 4596.880197525024
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 4111.279487609863,
+                "s_ms": 4493.76654624939
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3568.681240081787,
+                "s_ms": 4493.199348449707
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3580.3346633911133,
+                "s_ms": 4503.785133361816
+              }
+            ],
+            "verdict": "fail"
+          },
+          {
+            "latency_total": 33.2313756942749,
+            "turn_latency": 8.307843923568726,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3846.3540077209473,
+                "s_ms": 4626.715898513794
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 4112.316370010376,
+                "s_ms": 4486.452579498291
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3581.0341835021973,
+                "s_ms": 4494.617700576782
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3592.776298522949,
+                "s_ms": 4491.066694259644
+              }
+            ],
+            "verdict": "fail"
+          }
+        ],
+        "S4": [
+          {
+            "latency_total": 32.60048222541809,
+            "turn_latency": 8.150120556354523,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3596.5592861175537,
+                "s_ms": 4483.420133590698
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3865.2801513671875,
+                "s_ms": 4492.2194480896
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3587.230920791626,
+                "s_ms": 4500.123739242554
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3582.461357116699,
+                "s_ms": 4492.607355117798
+              }
+            ],
+            "verdict": "fail"
+          },
+          {
+            "latency_total": 32.592907667160034,
+            "turn_latency": 8.148226916790009,
+            "score": 0.0,
+            "technical_depth": 0.0,
+            "truthfulness_consistency": 0.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": false,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3603.1179428100586,
+                "s_ms": 4491.085767745972
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3854.9563884735107,
+                "s_ms": 4485.9795570373535
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3571.2709426879883,
+                "s_ms": 4502.713918685913
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 0,
+                  "technical_depth": 0,
+                  "truthfulness_consistency": 0,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "PARSE_ERROR:Expecting value: line 1 column 1 (char 0)"
+                },
+                "q_ms": 3581.270694732666,
+                "s_ms": 4501.986980438232
+              }
+            ],
+            "verdict": "fail"
+          }
+        ],
+        "__step_log__": [
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 804,
+            "out_tok": 80,
+            "elapsed_ms": 5688.9190673828125,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 704,
+            "out_tok": 0,
+            "elapsed_ms": 4402.518510818481,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1031,
+            "out_tok": 79,
+            "elapsed_ms": 3697.8585720062256,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 705,
+            "out_tok": 0,
+            "elapsed_ms": 4344.783306121826,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 1002,
+            "out_tok": 76,
+            "elapsed_ms": 3261.929750442505,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 702,
+            "out_tok": 0,
+            "elapsed_ms": 4324.647426605225,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1036,
+            "out_tok": 80,
+            "elapsed_ms": 3276.1056423187256,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 712,
+            "out_tok": 0,
+            "elapsed_ms": 4324.257135391235,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 804,
+            "out_tok": 80,
+            "elapsed_ms": 3453.516960144043,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 704,
+            "out_tok": 0,
+            "elapsed_ms": 4341.085433959961,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1031,
+            "out_tok": 79,
+            "elapsed_ms": 3709.977865219116,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 705,
+            "out_tok": 0,
+            "elapsed_ms": 4344.85387802124,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 1002,
+            "out_tok": 76,
+            "elapsed_ms": 3271.549701690674,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 702,
+            "out_tok": 0,
+            "elapsed_ms": 4342.383861541748,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1036,
+            "out_tok": 80,
+            "elapsed_ms": 3292.4880981445312,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S1",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 712,
+            "out_tok": 0,
+            "elapsed_ms": 4344.64955329895,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 804,
+            "out_tok": 78,
+            "elapsed_ms": 3459.383010864258,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 681,
+            "out_tok": 0,
+            "elapsed_ms": 4348.015546798706,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1008,
+            "out_tok": 82,
+            "elapsed_ms": 3715.9481048583984,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4487.226486206055,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 966,
+            "out_tok": 76,
+            "elapsed_ms": 3393.32914352417,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4460.984706878662,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1013,
+            "out_tok": 78,
+            "elapsed_ms": 3386.967897415161,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 699,
+            "out_tok": 0,
+            "elapsed_ms": 4474.843740463257,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 804,
+            "out_tok": 78,
+            "elapsed_ms": 3564.4822120666504,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 681,
+            "out_tok": 0,
+            "elapsed_ms": 4475.950717926025,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1008,
+            "out_tok": 82,
+            "elapsed_ms": 3826.9636631011963,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4467.142105102539,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 966,
+            "out_tok": 76,
+            "elapsed_ms": 3391.890525817871,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4494.31037902832,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1013,
+            "out_tok": 78,
+            "elapsed_ms": 3409.6555709838867,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S2",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 699,
+            "out_tok": 0,
+            "elapsed_ms": 4509.202480316162,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 842,
+            "out_tok": 72,
+            "elapsed_ms": 3834.1660499572754,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 704,
+            "out_tok": 0,
+            "elapsed_ms": 4596.880197525024,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1069,
+            "out_tok": 81,
+            "elapsed_ms": 4111.279487609863,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 705,
+            "out_tok": 0,
+            "elapsed_ms": 4493.76654624939,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 1040,
+            "out_tok": 76,
+            "elapsed_ms": 3568.681240081787,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 702,
+            "out_tok": 0,
+            "elapsed_ms": 4493.199348449707,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1074,
+            "out_tok": 78,
+            "elapsed_ms": 3580.3346633911133,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 712,
+            "out_tok": 0,
+            "elapsed_ms": 4503.785133361816,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 842,
+            "out_tok": 72,
+            "elapsed_ms": 3846.3540077209473,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 704,
+            "out_tok": 0,
+            "elapsed_ms": 4626.715898513794,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1069,
+            "out_tok": 81,
+            "elapsed_ms": 4112.316370010376,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 705,
+            "out_tok": 0,
+            "elapsed_ms": 4486.452579498291,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 1040,
+            "out_tok": 76,
+            "elapsed_ms": 3581.0341835021973,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 702,
+            "out_tok": 0,
+            "elapsed_ms": 4494.617700576782,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1074,
+            "out_tok": 78,
+            "elapsed_ms": 3592.776298522949,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S3",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 712,
+            "out_tok": 0,
+            "elapsed_ms": 4491.066694259644,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 842,
+            "out_tok": 77,
+            "elapsed_ms": 3596.5592861175537,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 681,
+            "out_tok": 0,
+            "elapsed_ms": 4483.420133590698,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1046,
+            "out_tok": 77,
+            "elapsed_ms": 3865.2801513671875,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4492.2194480896,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 1004,
+            "out_tok": 80,
+            "elapsed_ms": 3587.230920791626,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4500.123739242554,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1051,
+            "out_tok": 79,
+            "elapsed_ms": 3582.461357116699,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 699,
+            "out_tok": 0,
+            "elapsed_ms": 4492.607355117798,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 842,
+            "out_tok": 77,
+            "elapsed_ms": 3603.1179428100586,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 681,
+            "out_tok": 0,
+            "elapsed_ms": 4491.085767745972,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1046,
+            "out_tok": 77,
+            "elapsed_ms": 3854.9563884735107,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4485.9795570373535,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 1004,
+            "out_tok": 80,
+            "elapsed_ms": 3571.2709426879883,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 692,
+            "out_tok": 0,
+            "elapsed_ms": 4502.713918685913,
+            "status": "error"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1051,
+            "out_tok": 79,
+            "elapsed_ms": 3581.270694732666,
+            "status": "ok"
+          },
+          {
+            "model": "kwangsuklee/Qwen3-kor-4B-Q4_K_M",
+            "scenario": "S4",
+            "run": 2,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 699,
+            "out_tok": 0,
+            "elapsed_ms": 4501.986980438232,
+            "status": "error"
+          }
+        ]
+      }
+    },
+    "gpt-4o-mini": {
+      "direct_reasoning": {
+        "success": true,
+        "points": 0
+      },
+      "strict_json": {
+        "success_rate": 1.0,
+        "pollution_rate": 0.0,
+        "failure_rate": 0.0
+      },
+      "e2e": {
+        "S1": [
+          {
+            "latency_total": 16.89291477203369,
+            "turn_latency": 4.223228693008423,
+            "score": 63.75,
+            "technical_depth": 55.0,
+            "truthfulness_consistency": 75.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": true,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 60,
+                  "technical_depth": 50,
+                  "truthfulness_consistency": 80,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The answer provides a basic overview of using SETNX for a distributed lock, but lacks specific details on timeout and retry mechanisms. This indicates a lack of depth in implementation details."
+                },
+                "q_ms": 2566.769599914551,
+                "s_ms": 2858.0121994018555
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 75,
+                  "technical_depth": 70,
+                  "truthfulness_consistency": 90,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "The reason for choosing pessimistic locking is clearly stated with reference to collision rates, which reflects a relevant performance consideration."
+                },
+                "q_ms": 923.3853816986084,
+                "s_ms": 2456.696033477783
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 75,
+                  "technical_depth": 70,
+                  "truthfulness_consistency": 80,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "The answer identifies a specific risk (deadlock) and a solution (TTL watchdog), showing practical experience. However, it lacks details on frequency and consequences of the issue."
+                },
+                "q_ms": 1319.7917938232422,
+                "s_ms": 2572.4501609802246
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 45,
+                  "technical_depth": 30,
+                  "truthfulness_consistency": 50,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The response lacks specific details on the steps taken and suggests a division of responsibility that undermines the ownership claimed. It does not demonstrate sufficient technical depth regarding preventing deadlocks."
+                },
+                "q_ms": 1535.7377529144287,
+                "s_ms": 2659.998893737793
+              }
+            ],
+            "verdict": "borderline"
+          }
+        ],
+        "S2": [
+          {
+            "latency_total": 14.158204317092896,
+            "turn_latency": 3.539551079273224,
+            "score": 28.75,
+            "technical_depth": 17.5,
+            "truthfulness_consistency": 55.0,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": true,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 20,
+                  "technical_depth": 10,
+                  "truthfulness_consistency": 70,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The answer lacks specificity regarding actual techniques used, indicating a superficial understanding. The statement about following standard configuration does not provide evidence of addressing concurrency issues."
+                },
+                "q_ms": 653.2158851623535,
+                "s_ms": 1909.458875656128
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 25,
+                  "technical_depth": 10,
+                  "truthfulness_consistency": 30,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The answer lacks a clear explanation of metrics or issues, indicating superficial engagement with the question. The focus on popularity without critical evaluation suggests overclaiming."
+                },
+                "q_ms": 716.8843746185303,
+                "s_ms": 4812.622785568237
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 40,
+                  "technical_depth": 30,
+                  "truthfulness_consistency": 60,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The response does not adequately justify the criterion of popularity, relying instead on anecdotal success. This indicates a lack of thorough evaluation."
+                },
+                "q_ms": 922.2145080566406,
+                "s_ms": 2335.08563041687
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 30,
+                  "technical_depth": 20,
+                  "truthfulness_consistency": 60,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The response lacks specific metrics and details on performance measurement, indicating overclaiming. It suggests a superficial understanding of the implementation's evaluation."
+                },
+                "q_ms": 739.4711971282959,
+                "s_ms": 2068.373441696167
+              }
+            ],
+            "verdict": "fail"
+          }
+        ],
+        "S3": [
+          {
+            "latency_total": 13.60763669013977,
+            "turn_latency": 3.4019091725349426,
+            "score": 61.25,
+            "technical_depth": 55.0,
+            "truthfulness_consistency": 82.5,
+            "b2_overval": false,
+            "contradiction_detected": false,
+            "overclaiming_detected": true,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 60,
+                  "technical_depth": 50,
+                  "truthfulness_consistency": 80,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The answer lacks detail on the complete implementation process and does not address error handling or timeout specifics. While it mentions using Redis SETNX, it does not elaborate on the retry logic or overall architecture."
+                },
+                "q_ms": 894.8550224304199,
+                "s_ms": 2095.142364501953
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 70,
+                  "technical_depth": 60,
+                  "truthfulness_consistency": 80,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "The explanation of choosing pessimistic locking aligns with the stated collision rate, demonstrating practical reasoning. However, further details on specific timeout settings or retry logic would improve the technical depth."
+                },
+                "q_ms": 1326.1137008666992,
+                "s_ms": 2623.6484050750732
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 70,
+                  "technical_depth": 80,
+                  "truthfulness_consistency": 90,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": false,
+                  "rationale": "The answer identifies a valid risk of deadlock with pessimistic locking and describes how it was resolved. However, the score reflects that more detail could enhance the understanding of risks."
+                },
+                "q_ms": 1226.4814376831055,
+                "s_ms": 2049.8273372650146
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 45,
+                  "technical_depth": 30,
+                  "truthfulness_consistency": 80,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The response indicates ownership of lock design but lacks details on specific deadlock handling measures. Additionally, delegating Redis provisioning does not directly address the deadlock issue."
+                },
+                "q_ms": 817.5029754638672,
+                "s_ms": 2571.0434913635254
+              }
+            ],
+            "verdict": "borderline"
+          }
+        ],
+        "S4": [
+          {
+            "latency_total": 12.480950117111206,
+            "turn_latency": 3.1202375292778015,
+            "score": 22.5,
+            "technical_depth": 15.0,
+            "truthfulness_consistency": 42.5,
+            "b2_overval": false,
+            "contradiction_detected": true,
+            "overclaiming_detected": true,
+            "ledger": [
+              {
+                "state": "how",
+                "res": {
+                  "score": 20,
+                  "technical_depth": 10,
+                  "truthfulness_consistency": 90,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The answer lacks detailed strategies or insights into the optimization process, which is critical for evaluating technical depth. Stating they used standard configuration does not demonstrate sufficient knowledge or application of the technologies involved."
+                },
+                "q_ms": 720.7963466644287,
+                "s_ms": 1876.3344287872314
+              },
+              {
+                "state": "why",
+                "res": {
+                  "score": 20,
+                  "technical_depth": 10,
+                  "truthfulness_consistency": 30,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The answer lacks specific details about documentation and configurations, which are critical for addressing optimization challenges. Relying solely on popularity without consideration of alternatives reflects a poor understanding of best practices."
+                },
+                "q_ms": 873.2049465179443,
+                "s_ms": 2563.8856887817383
+              },
+              {
+                "state": "risk",
+                "res": {
+                  "score": 25,
+                  "technical_depth": 30,
+                  "truthfulness_consistency": 20,
+                  "contradiction_detected": true,
+                  "overclaiming_detected": true,
+                  "rationale": "The answer suggests complete success without acknowledging the implications of solely relying on popularity, which indicates a lack of critical evaluation. This reflects a superficial understanding of risk management."
+                },
+                "q_ms": 1023.446798324585,
+                "s_ms": 2453.843116760254
+              },
+              {
+                "state": "boundary_summary",
+                "res": {
+                  "score": 25,
+                  "technical_depth": 10,
+                  "truthfulness_consistency": 30,
+                  "contradiction_detected": false,
+                  "overclaiming_detected": true,
+                  "rationale": "The response lacks specific steps or examples, indicating a superficial understanding of the topic. Additionally, stating ownership of everything suggests an unrealistic level of control."
+                },
+                "q_ms": 819.7331428527832,
+                "s_ms": 2148.670196533203
+              }
+            ],
+            "verdict": "fail"
+          }
+        ],
+        "__step_log__": [
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 804,
+            "out_tok": 20,
+            "elapsed_ms": 2566.769599914551,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 543,
+            "out_tok": 44,
+            "elapsed_ms": 2858.0121994018555,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1031,
+            "out_tok": 12,
+            "elapsed_ms": 923.3853816986084,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 485,
+            "out_tok": 33,
+            "elapsed_ms": 2456.696033477783,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 962,
+            "out_tok": 17,
+            "elapsed_ms": 1319.7917938232422,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 521,
+            "out_tok": 39,
+            "elapsed_ms": 2572.4501609802246,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 995,
+            "out_tok": 18,
+            "elapsed_ms": 1535.7377529144287,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S1",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 526,
+            "out_tok": 43,
+            "elapsed_ms": 2659.998893737793,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 804,
+            "out_tok": 15,
+            "elapsed_ms": 653.2158851623535,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 496,
+            "out_tok": 39,
+            "elapsed_ms": 1909.458875656128,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1003,
+            "out_tok": 12,
+            "elapsed_ms": 716.8843746185303,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 489,
+            "out_tok": 38,
+            "elapsed_ms": 4812.622785568237,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 938,
+            "out_tok": 18,
+            "elapsed_ms": 922.2145080566406,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 514,
+            "out_tok": 35,
+            "elapsed_ms": 2335.08563041687,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 990,
+            "out_tok": 16,
+            "elapsed_ms": 739.4711971282959,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S2",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 497,
+            "out_tok": 34,
+            "elapsed_ms": 2068.373441696167,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 842,
+            "out_tok": 17,
+            "elapsed_ms": 894.8550224304199,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 510,
+            "out_tok": 48,
+            "elapsed_ms": 2095.142364501953,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1055,
+            "out_tok": 16,
+            "elapsed_ms": 1326.1137008666992,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 496,
+            "out_tok": 43,
+            "elapsed_ms": 2623.6484050750732,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 997,
+            "out_tok": 17,
+            "elapsed_ms": 1226.4814376831055,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 518,
+            "out_tok": 43,
+            "elapsed_ms": 2049.8273372650146,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1041,
+            "out_tok": 14,
+            "elapsed_ms": 817.5029754638672,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S3",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 502,
+            "out_tok": 39,
+            "elapsed_ms": 2571.0434913635254,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "question",
+            "in_chars": 842,
+            "out_tok": 18,
+            "elapsed_ms": 720.7963466644287,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 1,
+            "state": "how",
+            "step_type": "score",
+            "in_chars": 505,
+            "out_tok": 47,
+            "elapsed_ms": 1876.3344287872314,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "question",
+            "in_chars": 1046,
+            "out_tok": 20,
+            "elapsed_ms": 873.2049465179443,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 2,
+            "state": "why",
+            "step_type": "score",
+            "in_chars": 535,
+            "out_tok": 44,
+            "elapsed_ms": 2563.8856887817383,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "question",
+            "in_chars": 1004,
+            "out_tok": 21,
+            "elapsed_ms": 1023.446798324585,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 3,
+            "state": "risk",
+            "step_type": "score",
+            "in_chars": 530,
+            "out_tok": 42,
+            "elapsed_ms": 2453.843116760254,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "question",
+            "in_chars": 1051,
+            "out_tok": 20,
+            "elapsed_ms": 819.7331428527832,
+            "status": "ok"
+          },
+          {
+            "model": "gpt-4o-mini",
+            "scenario": "S4",
+            "run": 1,
+            "turn": 4,
+            "state": "boundary_summary",
+            "step_type": "score",
+            "in_chars": 524,
+            "out_tok": 38,
+            "elapsed_ms": 2148.670196533203,
+            "status": "ok"
+          }
+        ]
+      }
+    }
+  }
+}

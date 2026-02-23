@@ -241,3 +241,7 @@ pgdata/
 # gitkeep
 !data/.gitkeep
 !modules/.gitkeep
+# Benchmark/Test intermediate raw logs
+**/raw_logs/
+*.txt
+reports/**/raw_logs/*.json

@@ -33,6 +33,11 @@
 - **Package-Centric**: 재사용 로직은 `packages/` 하위 모듈로 관리한다.
 - 진입점(Entry)은 Thin 레이어로 유지하고 비즈니스 로직은 분리한다.
 
+### 1.5 루트 디렉토리 청결 유지 (Root Hygiene)
+- 루트 디렉토리(`IMH_interview/`)에는 어떠한 임시 파일(`.txt`, `.log`, `.tmp`)도 직접 생성하지 않는다.
+- 모든 테스트 및 벤치마크 산출물은 `docs/benchmarks/` 하위 폴더로, 런타임 로그는 `logs/benchmarks/` 또는 `logs/runtime/`으로 경로를 명시하여 생성한다.
+- 작업 종료 시 루트에 남은 임시 파일이 있다면 반드시 아카이빙 경로로 이동시키거나 제거한다.
+
 ---
 
 ## 2. 문서 접근 통제 (Single Source of Truth)

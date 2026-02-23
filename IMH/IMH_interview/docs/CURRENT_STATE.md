@@ -11,6 +11,7 @@
 - Python: **3.10.11**
 - Virtual Environment: **interview_env (venv)**
 - 모든 실행 및 검증은 반드시 `interview_env` 활성화 상태에서 수행한다.
+- 가상환경은 `C:\big20\big20_AI_Interview_simulation\interview_env`에 있다.
 - 글로벌 Python 환경에 패키지 설치는 금지한다.
 
 ---
@@ -105,7 +106,7 @@
 ## 5. 현재 작업 섹션
 
 ### ACTIVE
-- **TASK-033 (End-to-End Stress Test)**: [Approved Backlog] - 실시간 질문 생성 및 동기 평가 부하 검증.
+- **TASK-033 (모델 비교 및 평가 취약점 탐지)**: [ACTIVE] - 4상황(S1~S4) 기반 LLM 비교 및 평가 취약점(Drill-down 실패, JSON 오염, 환각 등) 탐지 테스트 스크립트 작성 진행 중.
 
 ### DONE
 - **TASK-031 (Snapshot Immutability)**: [DONE] L2/L3 Guards implemented & verified. strict mutability rejection (L2 & L3).

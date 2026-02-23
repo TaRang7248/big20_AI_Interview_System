@@ -1,0 +1,30 @@
+{
+  "kwangsuklee/Qwen3-kor-4B-Q4_K_M": {
+    "avg_score": 0.0,
+    "avg_td": 0.0,
+    "avg_tc": 0.0,
+    "b2_overval_rate": 0.0,
+    "contradiction_rate": 0.0,
+    "overclaiming_rate": 0.0,
+    "avg_turn_latency": 8.12188034504652,
+    "is_fit": false,
+    "fail_reasons": [
+      "CONTRADICTION_DETECT<50%",
+      "TECH_DEPTH<55"
+    ]
+  },
+  "gpt-4o-mini": {
+    "avg_score": 44.0625,
+    "avg_td": 35.625,
+    "avg_tc": 63.75,
+    "b2_overval_rate": 0.0,
+    "contradiction_rate": 0.25,
+    "overclaiming_rate": 1.0,
+    "avg_turn_latency": 3.5712316185235977,
+    "is_fit": false,
+    "fail_reasons": [
+      "CONTRADICTION_DETECT<50%",
+      "TECH_DEPTH<55"
+    ]
+  }
+}

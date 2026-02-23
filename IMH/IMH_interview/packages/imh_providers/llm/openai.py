@@ -23,7 +23,7 @@ class OpenAILLMProvider(ILLMProvider):
         self.client = openai.AsyncOpenAI(api_key=auth_key)
         self.model_name = model_name
         
-    async def chat(self, messages: List[LLMMessageDTO], system_prompt: Optional[str] = None) -> LLMResponseDTO:
+    async def chat(self, messages: List[LLMMessageDTO], system_prompt: Optional[str] = None, max_tokens: Optional[int] = None) -> LLMResponseDTO:
         openai_messages = []
         if system_prompt:
             openai_messages.append({"role": "system", "content": system_prompt})
@@ -36,7 +36,8 @@ class OpenAILLMProvider(ILLMProvider):
             response = await self.client.chat.completions.create(
                 model=self.model_name,
                 messages=openai_messages,
-                stream=False
+                stream=False,
+                **(({"max_tokens": max_tokens}) if max_tokens else {})
             )
             
             choice = response.choices[0]

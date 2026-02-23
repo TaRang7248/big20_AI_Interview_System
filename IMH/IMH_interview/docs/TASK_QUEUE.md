@@ -274,9 +274,10 @@
 
 ## 2.2 Phase 10 Stabilization (ACTIVE)
 
-### TASK-033 End-to-End Stress Test & Latency Optimization
-- Goal: LLM 질문 생성 및 동기 평가 흐름의 동시성 부하 및 지연시간 최적화.
-- Status: BACKLOG (Ready to Start)
+### TASK-033 모델 비교 및 평가 취약점 탐지 테스트 파이프라인
+- Goal: 4상황(S1~S4) 자동 생성 및 메인/Fallback LLM 성능 검증, 프롬프트/평가 취약점(Drill-down, 오염, 환각 등) 탐지 파이프라인 구축.
+- Scope: `scripts/test_stress_s1_s4.py` 구현 및 L1~L5 Layer 정량적 리포트 산출.
+- Status: ACTIVE
 
 ---
 
