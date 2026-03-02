@@ -67,6 +67,21 @@
   - **TASK-030 (Authority First) 완료**: PostgreSQL 권위 선행 보장 및 원자적 커밋 흐름(`_atomic_commit`) 구현 완료. (R-1 제거)
     - **핵심 성과**: Authority First / Atomic Commit / Visibility Barrier / Redis Mirroring Resilience / Projection Subset 보장.
     - **검증**: `scripts/verify_task_030.py` PASS (EXIT 0, 단일 글로벌 타임라인 검증 포함).
+- **TASK-035 (LLM Wiring Sprint) 완료**:
+  - Status: DONE
+  - Scope:
+    - Weight Sync wiring (Snapshot-first, Fail-Fast enforced)
+    - PhaseManager Flow Contract runtime enforcement
+    - Fixed Question insertion (verbatim, no LLM/RAG)
+    - Resume Summary prompt injection (MAIN/FOLLOW_UP 조건부)
+    - Unified Feature Flags (default False)
+  - Verification:
+    - scripts/test_035_fast_gate.py Pass (28/28)
+  - Contract Compliance:
+    - Snapshot Authority preserved
+    - No Redis Write-Back
+    - No runtime snapshot mutation
+    - Deterministic distribution maintained
 - 잔여 승격 조건:
   - DB 레벨 Snapshot Immutable 강제 및 UPSERT 갱신 경로 차단 (R-3 제거)
   - DB 레벨 tag_code 허용 값 제약 강화 (R-2 제거)

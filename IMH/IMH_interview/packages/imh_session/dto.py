@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict
 from enum import Enum
 from .policy import InterviewMode
 
@@ -23,6 +23,19 @@ class SessionQuestionType(str, Enum):
     STATIC = "STATIC"
     GENERATED = "GENERATED"
 
+
+# TASK-034: Step 2 — Phase type for deterministic session ordering
+class SessionStepType(str, Enum):
+    """
+    Represents the phase of a question in the interview session.
+    Distribution is calculated for MAIN only.
+    OPENING, FOLLOW_UP, CLOSING are excluded from distribution.
+    """
+    OPENING = "OPENING"
+    MAIN = "MAIN"
+    FOLLOW_UP = "FOLLOW_UP"
+    CLOSING = "CLOSING"
+
 class SessionQuestion(BaseModel):
     """
     Represents a question in the session.
@@ -32,6 +45,12 @@ class SessionQuestion(BaseModel):
     content: str
     source_type: SessionQuestionType
     source_metadata: dict = Field(default_factory=dict)
+    # TASK-034: Step 2 — Phase, category, and question-level metadata flags
+    step_type: SessionStepType = SessionStepType.MAIN
+    tag_code: Optional[str] = None          # Capability category tag
+    parent_question_id: Optional[str] = None  # For FOLLOW_UP: inherits parent tag_code
+    question_relaxed: bool = False           # True if question deviated from target category
+    rag_triggered: bool = False              # True if RAG was used for this question
 
 class SessionContext(BaseModel):
     """
@@ -46,12 +65,23 @@ class SessionContext(BaseModel):
     current_step: int = 0
     completed_questions_count: int = 0
     early_exit_signaled: bool = False # Signal from Evaluation Layer
-    
+
     # Snapshot Data
     current_question: Optional[SessionQuestion] = None
-    question_history: List[SessionQuestion] = Field(default_factory=list) 
-    answers_history: list = Field(default_factory=list) # List of Answer (DTO not defined here yet, use generic list or dict)
-    
+    question_history: List[SessionQuestion] = Field(default_factory=list)
+    answers_history: list = Field(default_factory=list)
+
     # Snapshots
     job_policy_snapshot: Optional[dict] = None
     session_config_snapshot: Optional[dict] = None
+
+    # TASK-034: Step 2 — Frozen snapshot fields (immutable after session start)
+    # These are set once and never modified during the session.
+    main_question_n: Optional[int] = None           # MAIN questions only; excludes OPENING/FOLLOW_UP/CLOSING
+    evaluation_weights: Optional[Dict[str, float]] = None  # Frozen from JobPolicy Snapshot
+    resume_summary: Optional[str] = None             # Generated once at session start; immutable
+    distribution_result: Optional[Dict[str, int]] = None   # Slots per tag_code; frozen post-distribution
+
+    # TASK-034: Step 2 — Session-level metadata flags (set independently)
+    policy_relaxed: bool = False             # True if distribution deviated from target weights
+    low_confidence_sample: bool = False      # True if main_question_n < 5

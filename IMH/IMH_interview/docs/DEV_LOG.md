@@ -1158,3 +1158,26 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
     - **Main Engine**: **xaone3.5:2.4b** (속도/품질 밸런스 1위)
     - **Candidate Engines**: cookieshake/a.x (iq2_m) (고품질용), llama3.2korean (빠른 인성용)
 - **검증**: docs/benchmarks/task_033_v2/final_report.md (EXIT 0)
+
+---
+
+### [2026-03-03] TASK-035: LLM Wiring Sprint (Speed Priority)
+- **목표**: TASK-034에서 구현된 정책 모듈(PhaseManager, DistributionCalculator, ResumeSummarizer 등)을 실제 `InterviewSessionEngine` 및 `RubricEvaluator`에 연결(Wiring)하여 면접 흐름과 평가 로직을 정교화함.
+- **주요 성과**:
+    - **Weight Sync Wiring**: `RubricEvaluator`가 Snapshot 내 `weights`를 최우선으로 참조하도록 변경. Key Mismatch 시 HTTP 400 Fail-Fast 강제 (Legacy Fallback 금지).
+    - **Phase Flow Wiring**: `PhaseManager`를 통한 인터뷰 단계(OPENING -> MAIN -> FOLLOW_UP -> CLOSING) 자동 관리. `terminate_session` 시 단계별 계약(MAIN 질문 개수 등) 준수 여부 Assertion 검증 추가.
+    - **Fixed Question Insertion**: 마지막 MAIN 슬롯에 채용 정책의 `fixed_question`을 원문 그대로(verbatim) 삽입. LLM 생성 및 RAG를 스킵하여 관리자 의도 100% 반영.
+    - **Resume Summary Injection**: 사용자 이력서 요약본(`resume_summary`)을 `MAIN` 단계 프롬프트에 자동 주입하여 LLM 질문의 개인화 Depth 강화. 1000자 Truncation 적용.
+    - **Unified Feature Flags**: `packages/imh_core/wiring_flags.py`를 신설하여 모든 Wiring 로직을 플래그 제어 가능하게 함. 기본값 `False`로 기존 동작 안정성 보장.
+- **검증 결과**:
+    - `scripts/test_035_fast_gate.py`: **Pass (28/28 tests)**
+        - **Gate 1 (Weight Sync)**: Snapshot 우선순위 및 Fail-Fast 동작 확인.
+        - **Gate 2 (Fixed Question)**: 원문 유지 및 Metadata(`bank_id=fixed`) 확인.
+        - **Gate 3 (Phase Flow)**: 단계 전이 규칙 및 Follow-up Depth(2회) 제한 확인.
+        - **Gate 4 (RAG Block)**: OPENING 단계 RAG 차단 확인.
+        - **Gate 5 (Assertion)**: 세션 종료 시 MAIN 카운트 및 시작/종료 단계 검증 확인.
+        - **Gate 6 (Resume)**: 프롬프트 내 요약본 주입 및 조건부 배제 로직 확인.
+- **계약 준수**:
+    - **Snapshot Authority**: 모든 가중치와 고정 질문은 Snapshot 데이터를 유일한 권위로 사용.
+    - **No Write-Back**: 런타임 중 Snapshot 수정 또는 Redis 역류 쓰기 없음.
+    - **Deterministic**: 질문 분배 및 고정 질문 삽입 위치가 결정론적으로 작동함.

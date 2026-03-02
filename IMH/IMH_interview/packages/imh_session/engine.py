@@ -1,11 +1,28 @@
 import logging
 from typing import Optional
 from .state import SessionStatus, SessionEvent, TerminationReason
-from .dto import SessionConfig, SessionContext, SessionQuestion, SessionQuestionType
+from .dto import SessionConfig, SessionContext, SessionQuestion, SessionQuestionType, SessionStepType
 from .policy import get_policy, InterviewMode
 from .repository import SessionStateRepository, SessionHistoryRepository
 from packages.imh_providers.question import QuestionGenerator
 from packages.imh_qbank.service import QuestionBankService
+try:
+    from packages.imh_core.wiring_flags import WiringFlags  # TASK-035
+except ModuleNotFoundError:
+    try:
+        import sys as _sys
+        import os as _os
+        _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "..", ".."))
+        from packages.imh_core.wiring_flags import WiringFlags  # TASK-035
+    except Exception:
+        class WiringFlags:  # type: ignore
+            @classmethod
+            def weight_sync_active(cls): return False
+            @classmethod
+            def phase_active(cls): return False
+            @classmethod
+            def fixed_q_active(cls): return False
+from .phase_manager import PhaseManager                 # TASK-035
 import uuid
 import random
 
@@ -36,10 +53,19 @@ class InterviewSessionEngine:
         self.qbank_service = qbank_service
         # PostgreSQL Authority Repository (Required for TASK-030)
         self.pg_authority_repo = pg_state_repo
-        
+
         # Initialize Policy
         self.policy = get_policy(self.config.mode)
-        
+
+        # TASK-035: PhaseManager (guarded by WIRING_PHASE_ENABLED)
+        if WiringFlags.phase_active():
+            self._phase_manager = PhaseManager(
+                main_question_n=self.config.total_question_limit,
+                tail_question_limit=2,
+            )
+        else:
+            self._phase_manager = None
+
         # Initialize or load context
         self.context = self._load_or_initialize_context()
 
@@ -86,32 +112,61 @@ class InterviewSessionEngine:
     def _get_next_question(self) -> SessionQuestion:
         """
         TASK-032 / TASK-025: Determine the next question using RAG -> Fallback strategy.
+        TASK-035: PhaseManager flow + Fixed Question injection wiring.
         Strict Immutable Rule: Engine decides source.
         Deduplication rule applied via history injection.
         """
         # 1. Prepare Context for Generator
-        # TASK-032: Inject history to prevent LLM from repeating
         history_contents = [q.content for q in self.context.question_history]
         used_ids = [q.id for q in self.context.question_history]
+        current_step = self.context.current_step
+        total_steps = self.config.total_question_limit
+
+        # ── TASK-035: Phase step-type assignment (flag-gated) ──────────.
+        assigned_step_type = SessionStepType.MAIN  # default (legacy path)
+        if WiringFlags.phase_active() and self._phase_manager:
+            assigned_step_type = self._phase_manager.get_step_type(
+                step_index=current_step - 1,   # convert 1-based step to 0-based index
+                total_steps=total_steps,
+            )
+
+        # ── TASK-035: Fixed Question injection (last MAIN slot, flag-gated) ─────
+        if WiringFlags.fixed_q_active() and assigned_step_type == SessionStepType.MAIN:
+            fixed_text = self._resolve_fixed_question(current_step, total_steps)
+            if fixed_text is not None:
+                logger.info("[FixedQ] Serving fixed_question verbatim at step %s", current_step)
+                return SessionQuestion(
+                    id=str(uuid.uuid4()),
+                    content=fixed_text,
+                    source_type=SessionQuestionType.STATIC,
+                    source_metadata={"bank_id": "fixed"},
+                    step_type=SessionStepType.MAIN,
+                    question_relaxed=True,
+                )
+        # ────────────────────────────────────────────────────────────
 
         gen_context = {
-            "job_id": self.context.job_id, 
-            "step": self.context.current_step + 1,
-            "question_history": history_contents
+            "job_id": self.context.job_id,
+            "step": current_step + 1,
+            "question_history": history_contents,
+            # TASK-035: Resume Summary injection (passed to generator)
+            "resume_summary": self.context.resume_summary if WiringFlags.phase_active() else None,
+            "step_type": assigned_step_type,
         }
 
         # 2. Try RAG Generation (Primary Strategy - Tier 1)
         try:
             # Check policy or config if we should even try RAG (Optional, for now assume yes)
             result = self.question_generator.generate_question(gen_context)
-            
+
             if result.success:
                 logger.info(f"RAG Generation Success for session {self.session_id}")
                 return SessionQuestion(
                     id=str(uuid.uuid4()),
                     content=result.content,
                     source_type=SessionQuestionType.GENERATED,
-                    source_metadata=result.metadata
+                    source_metadata=result.metadata,
+                    step_type=assigned_step_type,
                 )
             else:
                 logger.warning("RAG Generation Failed: %s. Triggering Fallback.", result.error)
@@ -121,44 +176,63 @@ class InterviewSessionEngine:
         # 3. Fallback to Static QBank (Secondary Strategy - Tier 2)
         # Fetch candidates
         candidates = self.qbank_service.get_candidates(
-            # We assume we can get job_role from config or job_id (here just passing None for simplicity or need lookup)
-            # ideally config has job_role
-            tags=["BEHAVIORAL"] # Default tag for generic fallback?
+            tags=["BEHAVIORAL"]
         )
-        
+
         # TASK-032: Deduplicate from Fallback Candidates
         available_candidates = [c for c in candidates if c.id not in used_ids]
-        
+
         if not available_candidates:
              # Critical Failure: Safe Fallback Set (Tier 3 - Emergency)
              logger.error("CRITICAL: Static QBank Empty or Exhausted! Using Emergency Question.")
-             
-             # Fallback array (Simple dedup strategy)
+
              emergencies = [
                  "Please introduce yourself and your key strengths.",
                  "What is your biggest weakness and how are you overcoming it?",
                  "Describe a time you faced a significant challenge at work.",
                  "Where do you see yourself in 5 years?"
              ]
-             
-             # Find first emergency question not in history
+
              emergency_content = next((eq for eq in emergencies if eq not in history_contents), emergencies[0])
-             
+
              return SessionQuestion(
-                 id=f"emergency-fallback-{int(time.time())}",
+                 id=f"emergency-fallback-{uuid.uuid4()}",
                  content=emergency_content,
                  source_type=SessionQuestionType.STATIC,
-                 source_metadata={"note": "Emergency Fallback"}
+                 source_metadata={"note": "Emergency Fallback"},
+                 step_type=assigned_step_type,
              )
-             
+
         # Select one random candidate from the unused pool
         selected = random.choice(available_candidates)
         return SessionQuestion(
             id=selected.id,
             content=selected.content,
             source_type=SessionQuestionType.STATIC,
-            source_metadata={"bank_id": selected.id, "tags": selected.tags}
+            source_metadata={"bank_id": selected.id, "tags": selected.tags},
+            step_type=assigned_step_type,
         )
+
+    def _resolve_fixed_question(self, current_step: int, total_steps: int) -> Optional[str]:
+        """
+        TASK-035: Resolve fixed_question text for the last MAIN slot.
+        Returns the verbatim question text, or None if not applicable.
+        Priority: job_policy_snapshot.fixed_question > session_config_snapshot.fixed_question
+        Insertion: only at the last MAIN slot (step == total_steps - 1, i.e. the step before CLOSING).
+        """
+        # Last MAIN slot = second-to-last step (total_steps - 1 is CLOSING index 0-based)
+        last_main_step = total_steps - 1  # 1-based: step N-1
+        if current_step != last_main_step:
+            return None
+
+        snap = self.context.job_policy_snapshot or {}
+        fixed_text = snap.get("fixed_question")
+        if not fixed_text:
+            snap2 = self.context.session_config_snapshot or {}
+            fixed_text = snap2.get("fixed_question")
+        if not fixed_text:
+            logger.warning("[FixedQ] fixed_question not found in job_policy_snapshot or session_config_snapshot.")
+        return fixed_text or None
 
     def start_session(self):
         """Transition from APPLIED to IN_PROGRESS."""
@@ -267,10 +341,34 @@ class InterviewSessionEngine:
     def terminate_session(self, reason: TerminationReason):
         """
         Transition to COMPLETED.
+        TASK-035: Runtime Assertion for Phase Flow contract (flag-gated).
         """
+        # ── TASK-035: Runtime Assertion ─────────────────────────────────
+        if WiringFlags.phase_active():
+            history = self.context.question_history
+            main_count = sum(
+                1 for q in history if getattr(q, "step_type", None) == SessionStepType.MAIN
+            )
+            first_type = getattr(history[0], "step_type", None) if history else None
+            last_type = getattr(history[-1], "step_type", None) if history else None
+            n = self.context.main_question_n or self.config.total_question_limit
+
+            if main_count != n:
+                logger.critical(
+                    "[PhaseAssertion] MAIN count mismatch: expected %s, got %s. Aborting.",
+                    n, main_count,
+                )
+                return  # Abort state transition
+            if first_type != SessionStepType.OPENING:
+                logger.critical("[PhaseAssertion] First step is not OPENING (%s). Aborting.", first_type)
+                return
+            if last_type != SessionStepType.CLOSING:
+                logger.critical("[PhaseAssertion] Last step is not CLOSING (%s). Aborting.", last_type)
+                return
+        # ────────────────────────────────────────────────────────────
         logger.info("Terminating session %s. Reason: %s", self.session_id, reason)
         self._update_status(SessionStatus.COMPLETED)
-        
+
         # Final Authority Commit (Status and History)
         self._atomic_commit()
 

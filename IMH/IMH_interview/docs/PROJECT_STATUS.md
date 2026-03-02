@@ -57,6 +57,14 @@
   - PostgreSQL Authority 선행 보장 및 원자성 강화 완료 (TASK-030)
   - Redis Runtime and Cache Layer 및 통계/관측 계층 구축 완료
   - LLM Provider 통합 및 On-Prem 최적 모델 선정 완료 (TASK-033)
+- **Wiring Layer 확정 (TASK-035)**:
+  - LLM Wiring Sprint 완료
+  - Snapshot-first Evaluation Weight Sync 적용
+  - PhaseManager 기반 Flow Contract 강제
+  - Fixed Question deterministic insertion
+  - Resume-aware Prompt Injection
+  - Feature Flag 기반 안전 전환 구조 확정
+  - Fast Gate 28/28 Pass
 - **향후 계획**:
   - 로컬 메인 엔진(`exaone`) 기반 실제 면접 데이터 축적 및 사용자 피드백 반영.
   - 서브 엔진(`a.x`, `llama`)을 활용한 하이브리드 평가 로직 도입 검토.

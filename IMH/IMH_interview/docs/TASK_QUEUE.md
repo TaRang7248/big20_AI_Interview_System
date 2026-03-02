@@ -272,6 +272,20 @@
 
 ---
 
+### TASK-035 LLM Wiring Sprint
+- Goal: Task-034 정책 모듈을 SessionEngine 및 EvaluationEngine에 Wiring
+- Scope:
+  - Evaluation Weight Sync (Fail-Fast)
+  - Phase Flow Contract Enforcement
+  - Fixed Question insertion
+  - Resume Summary Injection
+  - Unified Feature Flags
+- Verification:
+  - python scripts/test_035_fast_gate.py Pass (28/28)
+- Status: DONE
+
+---
+
 ## 2.2 Phase 10 Stabilization (ACTIVE)
 
 ### TASK-033 모델 비교 및 평가 취약점 탐지 테스트 파이프라인

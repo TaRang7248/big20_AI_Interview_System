@@ -8,6 +8,31 @@ from .rules import (
     calculate_attitude_score
 )
 from .weights import get_weights
+try:
+    from packages.imh_core.wiring_flags import WiringFlags
+except ModuleNotFoundError:
+    try:
+        import sys as _sys
+        import os as _os
+        _sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "..", ".."))
+        from packages.imh_core.wiring_flags import WiringFlags
+    except Exception:
+        class WiringFlags:  # type: ignore
+            """Stub: all flags off — legacy unchanged behavior."""
+            @classmethod
+            def weight_sync_active(cls): return False
+            @classmethod
+            def phase_active(cls): return False
+            @classmethod
+            def fixed_q_active(cls): return False
+
+# Canonical rubric keys — must match tag_code used in DistributionCalculator snapshots
+_REQUIRED_WEIGHT_KEYS = frozenset([
+    "capability.knowledge",
+    "capability.problem_solving",
+    "capability.communication",
+    "capability.attitude",
+])
 
 class EvaluationContext(BaseModel):
     """
@@ -34,9 +59,29 @@ class EvaluationContext(BaseModel):
     rephrasing_detected: bool = False
 
 class RubricEvaluator:
-    def evaluate(self, context: EvaluationContext) -> EvaluationResult:
-        # 1. Get Weights
-        weights = get_weights(context.job_category)
+    def evaluate(self, context: EvaluationContext, snapshot_weights: Optional[Dict[str, float]] = None) -> EvaluationResult:
+        # ── TASK-035: Weight Sync Wiring ─────────────────────────────────
+        # Flag OFF → identical to original behavior (uses legacy get_weights)
+        if WiringFlags.weight_sync_active() and snapshot_weights is not None:
+            # Snapshot weights EXIST: enforce Fail-Fast on any key mismatch
+            missing = _REQUIRED_WEIGHT_KEYS - snapshot_weights.keys()
+            unknown = snapshot_weights.keys() - _REQUIRED_WEIGHT_KEYS
+            if missing or unknown:
+                raise ValueError(
+                    f"[Weight Fail-Fast] Snapshot weight key mismatch. "
+                    f"Missing: {missing}, Unknown: {unknown}. "
+                    f"HTTP 400 — no silent fallback permitted."
+                )
+            weights = snapshot_weights
+        else:
+            # Snapshot weights ABSENT → legacy fallback (with warning if flag is active)
+            if WiringFlags.weight_sync_active() and snapshot_weights is None:
+                import logging
+                logging.getLogger("imh.eval").warning(
+                    "[Weight Sync] snapshot_weights not provided — falling back to legacy get_weights()."
+                )
+            weights = get_weights(context.job_category)
+        # ────────────────────────────────────────────────────────────────
         
         # 2. Calculate Category Scores
         

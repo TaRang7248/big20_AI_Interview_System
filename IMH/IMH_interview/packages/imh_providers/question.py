@@ -27,21 +27,31 @@ class LLMQuestionGenerator(QuestionGenerator):
     def generate_question(self, context: Dict[str, Any]) -> QuestionGenerationResult:
         import asyncio
         from packages.imh_core.dto import LLMMessageDTO
-        
+
         # 1. Build prompt based on context
         step = context.get("step", 1)
         job_id = context.get("job_id", "Unknown")
         history = context.get("question_history", [])
-        
+        # TASK-035: Resume Summary injection (flag-gated via context key)
+        resume_summary: Optional[str] = context.get("resume_summary")
+        step_type_val: str = context.get("step_type", "MAIN")
+        # Resolve to string name for comparison (SessionStepType enum or plain str)
+        step_type_name = step_type_val.value if hasattr(step_type_val, "value") else str(step_type_val)
+
         system_prompt = (
             "You are a professional technical interviewer AI. "
             "Generate ONE concise interview question based on the provided context."
         )
-        
+
         user_prompt = f"Job Category: Developer\nInterview Step: {step}\n"
         if history:
             user_prompt += "\nPreviously asked questions (Do NOT repeat these):\n" + "\n".join(f"- {q}" for q in history)
-            
+
+        # TASK-035: Inject resume_summary only for MAIN (not OPENING/GENERAL_SMALLTALK)
+        if resume_summary and step_type_name not in ("OPENING", "GENERAL_SMALLTALK"):
+            truncated = resume_summary[:1000]
+            user_prompt += f"\n\nCandidate Resume Summary (use as context for depth):\n{truncated}"
+
         user_prompt += "\n\nPlease ask the next interview question. Only output the question text, no conversational filler."
 
         messages = [LLMMessageDTO(role="user", content=user_prompt)]
