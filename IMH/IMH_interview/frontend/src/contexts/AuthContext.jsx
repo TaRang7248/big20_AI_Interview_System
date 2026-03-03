@@ -1,39 +1,48 @@
-import React, { createContext, useContext, useState, useCallback } from 'react'
+/**
+ * AuthContext - Thin bridge between Zustand AuthStore and React component tree.
+ * (Sections 44, B - FRONT-TASK-01)
+ *
+ * Provides React hooks for UI components using the Zustand store underneath.
+ * No business logic here - pure state delegation.
+ */
+
+import React, { createContext, useContext, useCallback } from 'react'
 import { authApi } from '../services/api'
+import { useAuthStore } from '../stores/authStore'
+import { createTraceId, ActionTrace } from '../lib/traceId'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(() => {
-        try {
-            const saved = localStorage.getItem('imh_user')
-            return saved ? JSON.parse(saved) : null
-        } catch {
-            return null
-        }
-    })
+    const { user, token, setSession, clearSession, setLoading, setError } = useAuthStore()
 
     const login = useCallback(async (username, password) => {
-        const res = await authApi.login({ username, password })
-        const { token, user_id, name, user_type } = res.data
-        const userData = { user_id, name, user_type }
-        localStorage.setItem('imh_token', token)
-        localStorage.setItem('imh_user', JSON.stringify(userData))
-        setUser(userData)
-        return userData
-    }, [])
+        const traceId = createTraceId()
+        ActionTrace.trigger(traceId, 'auth:login')
+        setLoading(true)
+        try {
+            const res = await authApi.login({ username, password })
+            const { token, refresh_token, user_id, name, user_type, email, phone } = res.data
+            const userData = { user_id, name, user_type, email, phone }
+            setSession(token, userData, refresh_token)  // Section 44: persist refresh_token
+            ActionTrace.stateApplied(traceId, 'AuthStore')
+            return userData
+        } catch (err) {
+            const error = err.error_code ? err : { error_code: 'E_UNKNOWN', trace_id: traceId, message: '로그인에 실패했습니다.' }
+            setError(error)
+            throw error
+        }
+    }, [setSession, setLoading, setError])
 
     const logout = useCallback(() => {
-        localStorage.removeItem('imh_token')
-        localStorage.removeItem('imh_user')
-        setUser(null)
-    }, [])
+        clearSession()
+    }, [clearSession])
 
     const isAdmin = user?.user_type === 'ADMIN'
     const isCandidate = user?.user_type === 'CANDIDATE'
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isAdmin, isCandidate }}>
+        <AuthContext.Provider value={{ user, token, isAdmin, isCandidate, login, logout }}>
             {children}
         </AuthContext.Provider>
     )

@@ -1,300 +1,373 @@
-import React, { useEffect, useState, useRef } from 'react'
+/**
+ * InterviewSession - Core TEXT Interview Page (PHASE 1 Vertical Slice)
+ *
+ * Contracts enforced:
+ * - Section 9.4: No local business state derivation
+ * - Section 14: Server-authoritative progression
+ * - Section 17: Status enum from server
+ * - Section 23.1: Traced button lifecycle
+ * - Section 27: Authority Pull on re-entry
+ * - Section 37: All state updates from server
+ * - Section 42: Rapid click guard via TracedButton
+ */
+
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { interviewsApi } from '../../services/api'
-
-const PHASES = ['자기소개', '지원동기', '직무역량', '경험/사례', '문제해결', '마무리']
-
-function Timer({ startTime }) {
-    const [elapsed, setElapsed] = useState(0)
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setElapsed(Math.floor((Date.now() - startTime) / 1000))
-        }, 1000)
-        return () => clearInterval(interval)
-    }, [startTime])
-
-    const mins = Math.floor(elapsed / 60).toString().padStart(2, '0')
-    const secs = (elapsed % 60).toString().padStart(2, '0')
-    return <span>{mins}:{secs}</span>
-}
+import { useSessionStore } from '../../stores/sessionStore'
+import ErrorBanner from '../../components/ErrorBanner'
+import TracedButton from '../../components/TracedButton'
+import { createTraceId, ActionTrace } from '../../lib/traceId'
+import { useSSEProjection } from '../../hooks/useSSEProjection'
 
 export default function InterviewSession() {
     const { interviewId } = useParams()
     const navigate = useNavigate()
-    const chatEndRef = useRef()
-    const [session, setSession] = useState(null)
-    const [messages, setMessages] = useState([])
-    const [input, setInput] = useState('')
-    const [loading, setLoading] = useState(true)
-    const [sending, setSending] = useState(false)
+    const [answer, setAnswer] = useState('')
+    const [chatHistory, setChatHistory] = useState([])
+    const [sessionData, setSessionData] = useState(null)
     const [isDone, setIsDone] = useState(false)
-    const [startTime] = useState(Date.now())
-    const videoRef = useRef()
-    const [camStream, setCamStream] = useState(null)
+    const chatBottomRef = useRef(null)
 
+    const {
+        setLoading, setError, error, isLoading, isPendingMutation, setFromProjection,
+        setPendingMutation, reset
+    } = useSessionStore()
+
+    // ─── Section 27: Authority Pull on initial load / re-entry ────────────────
     useEffect(() => {
-        async function init() {
+        let cancelled = false
+
+        async function authorityPull() {
+            const traceId = createTraceId()
+            ActionTrace.trigger(traceId, 'interview:authority-pull')
+            setLoading(true)
+
             try {
+                // Get session state (authority)
                 const [sessionRes, chatRes] = await Promise.all([
                     interviewsApi.get(interviewId),
                     interviewsApi.getChat(interviewId),
                 ])
-                setSession(sessionRes.data)
-                setMessages(chatRes.data)
-                if (['COMPLETED', 'EVALUATED'].includes(sessionRes.data.status)) {
+                if (cancelled) return
+
+                const session = sessionRes.data
+                const chat = chatRes.data
+
+                // Section 9.4: Status comes from server
+                if (session.status === 'EVALUATED' || session.status === 'COMPLETED') {
                     setIsDone(true)
                 }
-            } catch {
-                navigate('/candidate/home')
-            } finally {
-                setLoading(false)
+
+                setSessionData(session)
+                setChatHistory(chat)
+
+                // Section 27: Full overwrite of projection store
+                setFromProjection({
+                    sessionId: interviewId,
+                    jobId: session.job_id,
+                    jobTitle: session.job_title,
+                    status: session.status,
+                    currentPhase: session.current_phase,
+                    phaseIndex: session.phase_index,
+                    totalPhases: session.total_phases,
+                    turnCount: session.turn_count,
+                    messages: chat,
+                })
+
+                ActionTrace.stateApplied(traceId, 'SessionStore')
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err.error_code ? err : { error_code: 'E_UNKNOWN', trace_id: traceId, message: '세션 정보를 불러오지 못했습니다.' })
+                }
             }
         }
-        init()
 
-        // Start camera
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then(stream => {
-                setCamStream(stream)
-                if (videoRef.current) videoRef.current.srcObject = stream
-            })
-            .catch(() => { })
-
-        return () => {
-            setCamStream(s => {
-                if (s) s.getTracks().forEach(t => t.stop())
-                return null
-            })
-        }
+        authorityPull()
+        return () => { cancelled = true; reset() }
     }, [interviewId])
 
+    // Auto-scroll chat
     useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [messages])
+        chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [chatHistory])
 
-    async function handleSend() {
-        if (!input.trim() || sending || isDone) return
-        const userMsg = input.trim()
-        setInput('')
-        setSending(true)
+    // ─── Submit Answer (Section 23.1: Traced button lifecycle) ────────────────
+    const handleSubmit = useCallback(async (traceId) => {
+        if (!answer.trim() || isPendingMutation) return
 
-        setMessages(m => [...m, {
-            role: 'user',
-            content: userMsg,
-            phase: session?.current_phase,
-            created_at: new Date().toISOString(),
-        }])
+        const userMsg = { role: 'user', content: answer.trim(), phase: sessionData?.currentPhase, created_at: new Date().toISOString() }
+        // Append local display (not business state, only for visual continuity)
+        setChatHistory(prev => [...prev, userMsg])
+        setAnswer('')
+        setPendingMutation(true)
 
         try {
-            const res = await interviewsApi.sendChat(interviewId, userMsg)
-            const { ai_message, status, is_done, current_phase } = res.data
+            ActionTrace.apiStart(traceId, 'POST', `/interviews/${interviewId}/chat`)
+            const res = await interviewsApi.sendChat(interviewId, answer.trim())
+            ActionTrace.apiResponse(traceId, res.status)
 
-            setMessages(m => [...m, {
-                role: 'ai',
-                content: ai_message,
-                phase: current_phase,
-                created_at: new Date().toISOString(),
-            }])
+            const data = res.data
+            const aiMsg = { role: 'ai', content: data.ai_message, phase: data.current_phase, created_at: new Date().toISOString() }
+            setChatHistory(prev => [...prev, aiMsg])
 
-            setSession(s => ({ ...s, status, current_phase }))
-
-            if (is_done) {
+            // Section 9.4 / Section 17: Status enum from server
+            if (data.is_done || data.status === 'COMPLETED') {
                 setIsDone(true)
-                if (camStream) camStream.getTracks().forEach(t => t.stop())
+                setSessionData(prev => ({ ...prev, status: 'COMPLETED' }))
+            } else {
+                setSessionData(prev => ({ ...prev, currentPhase: data.current_phase, turnCount: data.turn || prev?.turnCount }))
             }
+
+            ActionTrace.stateApplied(traceId, 'SessionStore')
         } catch (err) {
-            setMessages(m => [...m, {
-                role: 'system',
-                content: '오류가 발생했습니다. 다시 시도해 주세요.',
-                created_at: new Date().toISOString(),
-            }])
+            setError(err.error_code ? err : { error_code: 'E_UNKNOWN', trace_id: traceId, message: '답변 제출에 실패했습니다.' })
         } finally {
-            setSending(false)
+            setPendingMutation(false)
         }
-    }
+    }, [answer, interviewId, isPendingMutation, sessionData])
 
-    function handleKeyDown(e) {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault()
-            handleSend()
-        }
-    }
+    const handleViewResult = useCallback(async (traceId) => {
+        ActionTrace.trigger(traceId, 'interview:view-result')
+        navigate(`/candidate/result/${interviewId}`)
+    }, [interviewId, navigate])
 
-    if (loading) {
+    if (isLoading && !sessionData) {
         return (
-            <div className="loading" style={{ height: '100vh' }}>
-                <div className="spinner" />면접 준비 중...
+            <div style={styles.fullPage}>
+                <div style={styles.loadingCard}>
+                    <div style={styles.spinner} />
+                    <p style={{ color: '#94a3b8', marginTop: 16 }}>면접 세션을 불러오는 중...</p>
+                </div>
             </div>
         )
     }
 
-    const phaseIdx = session?.phase_index ?? 0
-
     return (
-        <div className="interview-layout">
+        <div style={styles.fullPage}>
             {/* Header */}
-            <header className="interview-header">
-                <div className="flex items-center gap-4">
-                    <span style={{
-                        fontWeight: 800,
-                        fontSize: 18,
-                        background: 'var(--accent-gradient)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                    }}>
-                        IMH 면접
-                    </span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                        {session?.job_title || '채용 면접'}
+            <div style={styles.header}>
+                <div>
+                    <h1 style={styles.headerTitle}>
+                        {sessionData?.job_title || '면접 진행 중'}
+                    </h1>
+                    <span style={styles.phaseBadge}>
+                        {sessionData?.currentPhase || '준비 중'}
                     </span>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                        경과: <Timer startTime={startTime} />
-                    </div>
-                    <span className={`badge ${isDone ? 'badge-completed' : 'badge-progress'}`}>
-                        {isDone ? '완료' : '진행중'}
-                    </span>
-                </div>
-            </header>
-
-            {/* AI Panel */}
-            <aside className="interview-ai-panel">
-                <div className="ai-face">🤖</div>
-
-                <div style={{ width: '100%', textAlign: 'center' }}>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>현재 면접 단계</div>
-                    <div style={{
-                        fontSize: 16, fontWeight: 700,
-                        color: 'var(--accent-1)',
-                    }}>
-                        {session?.current_phase || PHASES[0]}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        {phaseIdx + 1} / {PHASES.length}
-                    </div>
-                </div>
-
-                {/* Cam */}
-                <div className="cam-panel" style={{ width: '100%', height: 160 }}>
-                    {camStream ? (
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            muted
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
-                        />
-                    ) : (
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
-                            📷 카메라 없음
-                        </div>
+                <div style={styles.phaseProgress}>
+                    {sessionData && (
+                        <span style={{ color: '#64748b', fontSize: 14 }}>
+                            {sessionData.phaseIndex + 1} / {sessionData.totalPhases} 단계
+                        </span>
                     )}
                 </div>
-            </aside>
-
-            {/* Chat area */}
-            <div className="interview-chat">
-                <div className="chat-container" style={{ flex: 1, overflow: 'auto' }}>
-                    {messages.map((msg, idx) => (
-                        <div
-                            key={idx}
-                            style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}
-                        >
-                            {msg.role !== 'system' && (
-                                <div className="chat-label" style={{ marginLeft: msg.role === 'user' ? 0 : 4, marginRight: msg.role === 'user' ? 4 : 0 }}>
-                                    {msg.role === 'ai' ? '🤖 AI 면접관' : '🙋 나'}
-                                    {msg.phase && <span style={{ marginLeft: 6, fontSize: 9, color: 'var(--accent-1)' }}>[{msg.phase}]</span>}
-                                </div>
-                            )}
-                            <div className={`chat-bubble ${msg.role}`}>
-                                {msg.content}
-                            </div>
-                        </div>
-                    ))}
-                    {sending && (
-                        <div style={{ alignSelf: 'flex-start' }}>
-                            <div className="chat-bubble ai" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                                <div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
-                                답변 분석 중...
-                            </div>
-                        </div>
-                    )}
-                    <div ref={chatEndRef} />
-                </div>
-
-                {/* Input */}
-                {!isDone ? (
-                    <div className="chat-input-area">
-                        <textarea
-                            className="chat-textarea"
-                            placeholder="답변을 입력하세요... (Ctrl+Enter로 전송)"
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            disabled={sending}
-                        />
-                        <div className="flex justify-between items-center">
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                                Ctrl+Enter로 전송
-                            </span>
-                            <button
-                                id="send-answer"
-                                className="btn btn-primary"
-                                onClick={handleSend}
-                                disabled={!input.trim() || sending}
-                            >
-                                답변 완료 ➤
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="chat-input-area" style={{ textAlign: 'center' }}>
-                        <div className="alert alert-success" style={{ margin: 0 }}>
-                            🎉 면접이 종료되었습니다.
-                        </div>
-                        <button
-                            className="btn btn-primary btn-full"
-                            style={{ marginTop: 12 }}
-                            onClick={() => navigate(`/candidate/result/${interviewId}`)}
-                        >
-                            결과 확인하기 →
-                        </button>
-                    </div>
-                )}
             </div>
 
-            {/* Side info */}
-            <aside className="interview-sidebar">
-                <div className="timer-display">
-                    <div className="timer-label">경과 시간</div>
-                    <div className="timer-value"><Timer startTime={startTime} /></div>
-                </div>
+            {/* Error Banner */}
+            <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-                <div className="phase-indicator">
-                    <div className="phase-label">면접 단계</div>
-                    <div className="phase-steps">
-                        {PHASES.map((phase, i) => (
-                            <div
-                                key={phase}
-                                className={`phase-step ${i < phaseIdx ? 'done' : i === phaseIdx ? 'active' : ''}`}
-                            >
-                                <div className="phase-dot" />
-                                {phase}
-                            </div>
-                        ))}
+            {/* Chat History */}
+            <div style={styles.chatContainer}>
+                {chatHistory.length === 0 && !isLoading && (
+                    <div style={styles.emptyChat}>
+                        <p style={{ color: '#475569' }}>면접이 시작되면 질문이 표시됩니다.</p>
                     </div>
-                </div>
+                )}
+                {chatHistory.map((msg, i) => (
+                    <div key={i} style={msg.role === 'user' ? styles.userMsg : styles.aiMsg}>
+                        <div style={styles.msgRole}>
+                            {msg.role === 'user' ? '👤 나' : '🤖 면접관'}
+                        </div>
+                        <div style={styles.msgContent}>{msg.content}</div>
+                        {msg.phase && (
+                            <div style={styles.msgPhase}>{msg.phase}</div>
+                        )}
+                    </div>
+                ))}
+                <div ref={chatBottomRef} />
+            </div>
 
-                <div className="card" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    <div style={{ fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>💡 면접 팁</div>
-                    <ul style={{ paddingLeft: 16, lineHeight: 1.8 }}>
-                        <li>구체적인 사례를 들어 설명하세요</li>
-                        <li>STAR 기법을 활용하세요</li>
-                        <li>자신감 있게 답변하세요</li>
-                    </ul>
+            {/* Answer Input Area */}
+            {!isDone ? (
+                <div style={styles.inputArea}>
+                    <textarea
+                        id="answer-input"
+                        value={answer}
+                        onChange={e => setAnswer(e.target.value)}
+                        placeholder="답변을 입력하세요. Enter+Shift로 줄바꿈, Enter로 제출..."
+                        style={styles.textarea}
+                        disabled={isPendingMutation}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter' && !e.shiftKey && !isPendingMutation && answer.trim()) {
+                                e.preventDefault()
+                                const traceId = createTraceId()
+                                handleSubmit(traceId)
+                            }
+                        }}
+                        rows={4}
+                    />
+                    <TracedButton
+                        id="submit-answer-btn"
+                        onClick={handleSubmit}
+                        actionName="interview:submit-answer"
+                        disabled={!answer.trim()}
+                        style={{ width: '100%', marginTop: 8, padding: '12px' }}
+                    >
+                        답변 제출 →
+                    </TracedButton>
                 </div>
-            </aside>
+            ) : (
+                <div style={styles.completedArea}>
+                    <div style={styles.completedBadge}>✅ 면접 완료</div>
+                    <p style={{ color: '#94a3b8', marginBottom: 16 }}>
+                        수고하셨습니다. 평가가 백그라운드에서 진행됩니다.
+                    </p>
+                    <TracedButton
+                        id="view-result-btn"
+                        onClick={handleViewResult}
+                        actionName="interview:navigate-result"
+                        style={{ padding: '12px 32px' }}
+                    >
+                        결과 확인하기
+                    </TracedButton>
+                </div>
+            )}
         </div>
     )
+}
+
+const styles = {
+    fullPage: {
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: 0,
+    },
+    loadingCard: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    spinner: {
+        width: 48,
+        height: 48,
+        border: '4px solid rgba(59,130,246,0.2)',
+        borderTopColor: '#3b82f6',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+    },
+    header: {
+        padding: '20px 24px',
+        borderBottom: '1px solid #1e293b',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'rgba(15,23,42,0.8)',
+        backdropFilter: 'blur(10px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+    },
+    headerTitle: {
+        color: '#f1f5f9',
+        fontSize: 20,
+        fontWeight: 700,
+        margin: '0 0 4px',
+    },
+    phaseBadge: {
+        background: 'rgba(59,130,246,0.15)',
+        color: '#60a5fa',
+        padding: '2px 10px',
+        borderRadius: 99,
+        fontSize: 13,
+        border: '1px solid rgba(59,130,246,0.3)',
+    },
+    phaseProgress: {
+        textAlign: 'right',
+    },
+    chatContainer: {
+        flex: 1,
+        overflowY: 'auto',
+        padding: '16px 24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 16,
+        maxHeight: 'calc(100vh - 220px)',
+    },
+    emptyChat: {
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px 0',
+    },
+    userMsg: {
+        alignSelf: 'flex-end',
+        maxWidth: '80%',
+        background: 'linear-gradient(135deg, #1d4ed8, #4338ca)',
+        borderRadius: '16px 16px 4px 16px',
+        padding: 16,
+    },
+    aiMsg: {
+        alignSelf: 'flex-start',
+        maxWidth: '80%',
+        background: '#1e293b',
+        border: '1px solid #334155',
+        borderRadius: '16px 16px 16px 4px',
+        padding: 16,
+    },
+    msgRole: {
+        fontSize: 12,
+        color: '#94a3b8',
+        marginBottom: 6,
+        fontWeight: 600,
+    },
+    msgContent: {
+        color: '#f1f5f9',
+        fontSize: 15,
+        lineHeight: 1.6,
+        whiteSpace: 'pre-wrap',
+    },
+    msgPhase: {
+        marginTop: 8,
+        fontSize: 11,
+        color: '#475569',
+        fontStyle: 'italic',
+    },
+    inputArea: {
+        padding: '16px 24px',
+        borderTop: '1px solid #1e293b',
+        background: 'rgba(15,23,42,0.9)',
+        backdropFilter: 'blur(10px)',
+    },
+    textarea: {
+        width: '100%',
+        background: '#1e293b',
+        border: '1px solid #334155',
+        borderRadius: 8,
+        color: '#f1f5f9',
+        fontSize: 15,
+        padding: '12px 16px',
+        resize: 'vertical',
+        outline: 'none',
+        fontFamily: 'inherit',
+        boxSizing: 'border-box',
+        transition: 'border-color 0.2s',
+    },
+    completedArea: {
+        padding: '24px',
+        borderTop: '1px solid #1e293b',
+        textAlign: 'center',
+        background: 'rgba(15,23,42,0.9)',
+    },
+    completedBadge: {
+        fontSize: 24,
+        fontWeight: 700,
+        color: '#22c55e',
+        marginBottom: 8,
+    },
 }

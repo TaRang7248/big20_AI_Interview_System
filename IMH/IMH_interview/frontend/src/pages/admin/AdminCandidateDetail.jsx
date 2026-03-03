@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { jobsApi } from '../../services/api'
+import AdminResumeDownloadButton from '../../components/AdminResumeDownloadButton'
 import {
     Chart as ChartJS, RadialLinearScale, PointElement,
     LineElement, Filler, Tooltip, Legend,
@@ -96,12 +97,14 @@ export default function AdminCandidateDetail() {
                             </div>
                             <div className="flex items-center gap-4">
                                 <span style={{ fontSize: 28 }}>📎</span>
-                                <div>
+                                <div style={{ flex: 1 }}>
                                     <div style={{ fontWeight: 600, fontSize: 14 }}>{data.resume.file_name}</div>
                                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                                         {new Date(data.resume.uploaded_at).toLocaleDateString('ko-KR')} 업로드
                                     </div>
                                 </div>
+                                {/* Section 46: Admin download requires access_reason_code */}
+                                <AdminResumeDownloadButton candidateUserId={userId} />
                             </div>
                         </div>
                     )}

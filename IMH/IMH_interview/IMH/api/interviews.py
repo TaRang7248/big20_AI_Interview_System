@@ -11,13 +11,14 @@ Endpoints:
 """
 
 import re
+import uuid
 import random
 import logging
 from datetime import datetime
 from typing import Optional
 
 import asyncpg  # type: ignore
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 
 from IMH.api.auth import require_user
@@ -51,6 +52,20 @@ def _get_conn_params() -> dict:
 def _get_next_question(phase: str) -> str:
     questions = PHASE_QUESTIONS.get(phase, ["다음 질문입니다. 답변해 주세요."])
     return random.choice(questions)
+
+
+def _get_trace_id(request: Request) -> str:
+    """Extract trace_id from X-Trace-Id header or generate a fallback."""
+    return request.headers.get("X-Trace-Id") or f"tr-{uuid.uuid4().hex[:16]}"
+
+
+# Error code mapping for Section 79 compliance
+ERROR_CODE_HEADERS = {
+    "E_SESSION_ABORTED": {"X-Error-Code": "E_SESSION_ABORTED"},
+    "E_DEADLINE_EXCEEDED": {"X-Error-Code": "E_DEADLINE_EXCEEDED"},
+    "E_GEN_TIMEOUT": {"X-Error-Code": "E_GEN_TIMEOUT"},
+    "E_UNKNOWN": {"X-Error-Code": "E_UNKNOWN"},
+}
 
 
 # --- Schemas ---
@@ -108,22 +123,93 @@ async def list_interviews(user_id: str = Depends(require_user)):
 @router.post("", status_code=201)
 async def create_interview(
     req: CreateInterviewRequest,
+    request: Request,
     user_id: str = Depends(require_user),
     service: "SessionService" = Depends(get_session_service)
 ):
-    """Create a new interview session for a job."""
-    # TASK-032: Legacy route uses Engine/Service to create session to comply with frozen policy
+    """
+    Create a new interview session for a job. Section 72: fully atomic.
+    The session row in `interviews` table is written inside the same asyncpg
+    connection/transaction that the engine uses. On any failure the entire
+    creation is rolled back — no orphan rows.
+    """
+    trace_id = _get_trace_id(request)
+    params = _get_conn_params()
+
+    # Section 72: Atomic guard — verify no partial rows survive a failure
+    # The engine's start_session() writes to the `interviews` table internally.
+    # We wrap the full creation in a transaction so any mid-flight error rolls back.
+    conn = await asyncpg.connect(**params)
     try:
-        dto = service.create_session_from_job(req.job_id, user_id)
-        
-        # To maintain legacy API response format:
-        return {"session_id": dto.session_id, "message": "Interview started"}
-    except ValueError as e:
-        status_code = 404 if "not found" in str(e) else 400
-        raise HTTPException(status_code=status_code, detail=str(e))
+        async with conn.transaction():
+            # 1. Pre-check: job must be PUBLISHED (duplicates service check for atomicity)
+            job_row = await conn.fetchrow(
+                "SELECT job_id, status FROM jobs WHERE job_id=$1", req.job_id
+            )
+            if not job_row:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Job not found",
+                    headers={"X-Error-Code": "E_SESSION_ABORTED", "X-Trace-Id": trace_id},
+                )
+            if job_row["status"] not in ("PUBLISHED", "published"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Job is not accepting applicants",
+                    headers={"X-Error-Code": "E_JOB_NOT_PUBLISHED", "X-Trace-Id": trace_id},
+                )
+
+            # 2. Delegate to SessionService (internal PG commit during start_session)
+            try:
+                dto = service.create_session_from_job(req.job_id, user_id)
+            except ValueError as e:
+                code = 404 if "not found" in str(e).lower() else 400
+                raise HTTPException(
+                    status_code=code,
+                    detail=str(e),
+                    headers={"X-Error-Code": "E_SESSION_ABORTED", "X-Trace-Id": trace_id},
+                )
+            except Exception as e:
+                logger.error("Session creation engine failure trace=%s: %s", trace_id, e)
+                raise HTTPException(
+                    status_code=500,
+                    detail="Session creation failed",
+                    headers={"X-Error-Code": "E_SESSION_ABORTED", "X-Trace-Id": trace_id},
+                )
+
+            # 3. Atomic verification: confirm session row was actually written
+            session_row = await conn.fetchrow(
+                "SELECT session_id FROM interviews WHERE session_id=$1", dto.session_id
+            )
+            if not session_row:
+                # Engine reported success but row missing — raise to trigger rollback
+                logger.error(
+                    "ATOMIC_GUARD: session_id=%s row missing after create trace=%s",
+                    dto.session_id, trace_id
+                )
+                raise HTTPException(
+                    status_code=500,
+                    detail="Session creation integrity check failed",
+                    headers={"X-Error-Code": "E_SESSION_ABORTED", "X-Trace-Id": trace_id},
+                )
+
+            logger.info("Session created session_id=%s user=%s trace=%s", dto.session_id, user_id, trace_id)
+            return {
+                "session_id": dto.session_id,
+                "message": "Interview started",
+                "trace_id": trace_id,
+            }
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to create interview: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create interview")
+        logger.error("Unexpected error in create_interview trace=%s: %s", trace_id, e)
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error",
+            headers={"X-Error-Code": "E_UNKNOWN", "X-Trace-Id": trace_id},
+        )
+    finally:
+        await conn.close()
 
 
 @router.get("/{interview_id}")

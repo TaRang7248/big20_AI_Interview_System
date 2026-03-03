@@ -183,27 +183,65 @@ def get_projection(session_id: str):
 # ------------------------------------------------------------------ #
 
 @router.get("/{session_id}/multimodal/stream")
-async def projection_stream(session_id: str):
+async def projection_stream(
+    session_id: str,
+    last_event_id: str = Query(None, alias="lastEventId"),
+):
     """
     Server-Sent Events push for real-time multimodal updates (plan §10).
 
     Uses Redis Pub/Sub channel: mm:pubsub:{session_id}
-    On reconnect, client should include Last-Event-ID header.
-    On unrecoverable gap, client should fallback to GET /projection.
+
+    event_seq Contract (Section 37 / Implementation Plan SSE Guard):
+    - Each event carries `event_seq` in BOTH the SSE `id:` field AND the JSON data body.
+    - The `id:` field enables Last-Event-ID reconnection.
+    - The JSON `event_seq` enables client-side inversion detection.
+    - On reconnect, client sends `lastEventId` query param; server notes the gap.
+    - Gap events beyond a threshold → client must fallback to GET /projection.
+
+    Client guard:
+    - If received event_seq <= last_seen_seq: discard the event and trigger authority pull.
+    - If gap (received_seq - last_seen_seq) > 1: trigger authority pull, then resume SSE.
     """
+    import asyncio
     r = _get_redis()
     channel = f"mm:pubsub:{session_id}"
     pubsub = r.pubsub()
     pubsub.subscribe(channel)
 
+    # Resolve starting seq from Last-Event-ID (reconnect continuity)
+    start_seq = 0
+    if last_event_id:
+        try:
+            start_seq = int(last_event_id)
+            logger.info(
+                "SSE reconnect session=%s last_event_id=%s (gap detection active)",
+                session_id, last_event_id
+            )
+        except (TypeError, ValueError):
+            pass
+
     async def event_generator() -> AsyncGenerator[str, None]:
-        event_id = 0
+        import json as _json
+        event_seq = start_seq
         try:
             for message in pubsub.listen():
                 if message["type"] == "message":
-                    event_id += 1
-                    data = message["data"]
-                    yield f"id: {event_id}\ndata: {data}\n\n"
+                    event_seq += 1
+                    raw = message["data"]
+
+                    # Embed event_seq in JSON payload for client-side inversion guard
+                    try:
+                        payload = _json.loads(raw) if isinstance(raw, (str, bytes)) else {}
+                    except Exception:
+                        payload = {"raw": str(raw)}
+
+                    payload["event_seq"] = event_seq
+                    payload["session_id"] = session_id
+
+                    data_str = _json.dumps(payload)
+                    # SSE id: field = event_seq (enables Last-Event-ID)
+                    yield f"id: {event_seq}\nevent: projection\ndata: {data_str}\n\n"
         except GeneratorExit:
             pass
         finally:
@@ -216,6 +254,7 @@ async def projection_stream(session_id: str):
         headers={
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
         },
     )
 

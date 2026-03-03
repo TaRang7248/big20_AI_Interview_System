@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Optional
 
 import asyncpg  # type: ignore
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 
@@ -26,8 +26,14 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 security = HTTPBearer(auto_error=False)
 
 # --- Simple token store (in-memory for local E2E) ---
-_token_store: dict = {}  # token -> user_id
-_user_type_store: dict = {}  # user_id -> user_type
+_token_store: dict = {}        # access_token -> user_id
+_refresh_store: dict = {}      # refresh_token -> user_id
+_user_token_store: dict = {}   # user_id -> current access_token (single-session enforcement)
+_user_type_store: dict = {}    # user_id -> user_type
+
+# Token TTL (seconds). Frontend must refresh before access_token expires.
+ACCESS_TOKEN_TTL_SEC = 3600      # 1 hour (set to 30 in tests)
+REFRESH_TOKEN_TTL_SEC = 86400    # 24 hours
 
 
 def _get_conn_params() -> dict:
@@ -45,11 +51,21 @@ def _hash_password(pw: str) -> str:
     return hashlib.sha256(pw.encode()).hexdigest()
 
 
-def _make_token(user_id: str, user_type: str) -> str:
-    token = hashlib.sha256(f"{user_id}:{uuid.uuid4()}".encode()).hexdigest()
-    _token_store[token] = user_id
+def _make_token(user_id: str, user_type: str) -> tuple[str, str]:
+    """Issue new access + refresh tokens. Enforces single active session per user."""
+    access_token = hashlib.sha256(f"acc:{user_id}:{uuid.uuid4()}".encode()).hexdigest()
+    refresh_token = hashlib.sha256(f"ref:{user_id}:{uuid.uuid4()}".encode()).hexdigest()
+
+    # Single-session enforcement: revoke previous access token for this user
+    old_token = _user_token_store.get(user_id)
+    if old_token and old_token in _token_store:
+        del _token_store[old_token]
+
+    _token_store[access_token] = user_id
+    _refresh_store[refresh_token] = user_id
+    _user_token_store[user_id] = access_token
     _user_type_store[user_id] = user_type
-    return token
+    return access_token, refresh_token
 
 
 def _get_user_id_from_token(token: Optional[str]) -> Optional[str]:
@@ -187,15 +203,61 @@ async def login(req: LoginRequest):
     if pw_hash != row["password_hash"]:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = _make_token(row["user_id"], row["user_type"])
+    token, refresh_token = _make_token(row["user_id"], row["user_type"])
     return {
         "token": token,
+        "refresh_token": refresh_token,
         "user_id": row["user_id"],
         "name": row["name"],
         "user_type": row["user_type"],
         "email": row["email"],
         "phone": row["phone"],
     }
+
+
+@router.post("/refresh")
+async def refresh_token(request: Request):
+    """
+    Section 44: Refresh access token using refresh token.
+    - On success: returns new access_token (and new refresh_token for rotation).
+    - On failure: client must perform global logout.
+    """
+    from fastapi import Request as _Request
+    body = await request.json()
+    refresh = body.get("refresh_token", "")
+
+    user_id = _refresh_store.get(refresh)
+    if not user_id:
+        raise HTTPException(
+            status_code=401,
+            detail="Refresh token invalid or expired. Please log in again.",
+            headers={"X-Error-Code": "E_AUTH_REFRESH_FAILED"},
+        )
+
+    user_type = _user_type_store.get(user_id, "CANDIDATE")
+
+    # Rotate: invalidate old refresh, issue new pair
+    del _refresh_store[refresh]
+    access_token, new_refresh = _make_token(user_id, user_type)
+    logger.info("Token refreshed user_id=%s", user_id)
+    return {"token": access_token, "refresh_token": new_refresh}
+
+
+@router.post("/logout")
+async def logout(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+):
+    """Invalidate access + refresh tokens (single session cleanup)."""
+    if credentials:
+        token = credentials.credentials
+        user_id = _token_store.pop(token, None)
+        if user_id:
+            # Remove refresh token for this user
+            stale = [k for k, v in _refresh_store.items() if v == user_id]
+            for k in stale:
+                _refresh_store.pop(k, None)
+            _user_token_store.pop(user_id, None)
+    return {"message": "Logged out"}
 
 
 @router.get("/me")
