@@ -91,6 +91,21 @@
 - **Concurrency**: `lock:session:{id}` (Fail-Fast 락).
 - **Idempotency**: `idempotency:{request_id}` (API 중복 실행 방지).
 
+### Phase 4: Stats Engine Runtime Policy (Locked)
+- **Scope**: DECIDED + EVALUATIVE only (물리적 격리).
+- **Time Basis**: UTC `decided_at` 기준 집계 및 Rebuild 가능성 확보.
+- **Isolation**: `REPEATABLE READ` 트랜잭션 (집계 일관성 보장).
+- **Cache**: Redis TTL 60s, `job_id` + `month_bucket` scope invalidation.
+- **Drift Guard**: 사후 수정 시도 시 HTTP 409 (E_LATE_MUTATION_FORBIDDEN) 반환.
+- **Full Rebuild**: PostgreSQL 원본 데이터로부터 완전 재생성 보장 (PG-Only).
+
+### Phase 4: Audit Runtime Policy (Locked)
+- **Source**: PostgreSQL append-only (`session_audit_events`).
+- **Events**: Created, Submitted, Started, Completed, Aborted, Decided, Overridden.
+- **Idempotency**: `DECISION_MADE` unique per session (DB Index).
+- **Override**: `DECISION_OVERRIDDEN` append-only correction (trace_id unique).
+- **Consistency**: Audit DECISION_MADE count == Stats count 교차 검증 (35/35 PASS).
+
 ---
 
 # 4. 현재 기술 부채 (Technical Debt)

@@ -1225,3 +1225,18 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
         - C2: `ABORTED` 상태 재진입 시 409 차단 확인.
         - D: 100회 동시성 스트레스 테스트 중 Limit=5 엄격 준수 확인.
 - **상태**: **DONE LOCK** (2026-03-03)
+## 2026-03-03
+
+### PHASE-4 DONE LOCK: Statistical & Audit Hardening
+- **요약**: PG-authoritative 통계 시스템, Append-only 감사 타임라인, Drift Guard 구현 완료.
+- **변경 사항**:
+    - packages/imh_stats/: aggregator.py, audit_timeline.py 구현.
+    - packages/imh_service/: audit_wiring.py, drift_guard.py 구현.
+    - IMH/api/: admin.py (Audit/Stats API), interviews.py (Late Mutation Guard) 업데이트.
+    - migrations/: phase4_slice4_drift_guard.sql (Stats Index, Unique Constraints) 추가.
+- **검증 증거**:
+    - scripts/verify_phase4_contracts.py: **35/35 PASS** (Regression 0건).
+    - Performance: Composite Index 적용으로 Full-table scan 제거 확인.
+    - Drift Guard: DECIDED 세션 수정 시 409 E_LATE_MUTATION_FORBIDDEN 즉각 반환 확인.
+    - Override: DECISION_OVERRIDDEN 멱등성 및 캐시 무효화 트리거 검증 완료.
+- **상태**: DONE LOCKED

@@ -120,6 +120,10 @@
 | Evaluation Determinism | evaluation_input_hash 기반 결정성 평가 보장. | LOCKED |
 | Session Terminal | ABORTED 상태 진입 시 재진입 원천 차단. | LOCKED |
 | GPU Concurrency | Redis LUA 기반 원자적 동시성 제어. | LOCKED |
+| Statistical Determinism| PG Source 기반 UTC Repeatable Read 집계. | LOCKED |
+| Drift Guard | DECIDED 세션에 대한 사후 수정 시도 금지(409). | LOCKED |
+| Idempotent Override | Decision Override 시 중복 trace_id 차단. | LOCKED |
+| Audit Append-only | 감사 로그는 절대 수정/삭제될 수 없다. | LOCKED |
 
 ---
 
@@ -132,9 +136,9 @@
 - `imh_history`: DONE (리포트 저장 및 이력 관리 - PG 전환 완료)
 - `imh_job`: DONE (공고 정책 엔진, Freeze/Snapshot 로직)
 - `imh_session`: DONE (세션 엔진, 모드 분리, 상태 관리)
-- `imh_service`: DONE (유스케이스 오케스트레이션, DTO/Mapper)
+- `imh_service`: DONE (유스케이스 오케스트레이션, DTO/Mapper, Drift Guard)
 - `imh_qbank`: DONE (질문은행 관리 및 RAG Fallback 통합)
-- `imh_stats`: DONE (통계 및 관측 계층)
+- `imh_stats`: DONE (PG-authoritative 통계 및 감사 타임라인)
 - `IMH/api`: DONE (런타임 진입점 및 계약 노출)
 
 ---
@@ -142,8 +146,9 @@
 ## 5. 현재 작업 섹션
 
 ### ACTIVE
-- **Phase 4 Plan (Statistical + Audit Hardening)**: [PLANNING]
-  - Goal: PG-authoritative dashboard, result separation, admin audit.
+- **Phase 5 Planning (Advanced Integrity Locks)**: [PLANNING]
+  - Active Phase: Phase 5
+  - System Stability Level: Enterprise-grade (Local)
 
 ### DONE
 - **TASK-033 (모델 비교 및 평가 취약점 탐지)**: [DONE]

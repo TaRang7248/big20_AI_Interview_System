@@ -47,23 +47,23 @@
 
 시스템은 실시간 멀티모달 계층을 포함하여 운영 가능한 아키텍처 환경을 갖추었으며, 모든 핵심 계약을 준수한 상태에서 MVP 구현을 완료하였다.
 
-### Phase: Multimodal Extension (DONE LOCKED)
-- Backend Real-time Streaming: DONE
-- Multimodal Workers: DONE
-- GPU Mutex: DONE
-- Verification Suite: DONE
-- Fixpack (C1-D): DONE (Determinism, Abort, Immutability, GPU Atomicity)
-- Frontend Integration: PASS (WebRTC MVP)
+### Phase 3: DONE LOCKED (VIDEO + Determinism + Abort + GPU Atomic)
+- Video extension, evaluation determinism, and terminal flow control.
 
-**Phase 3 Pass Evidence:**
-- Scenario 1~4 (MVP E2E Loop): PASS
-- Fixpack C1 (Hash Determinism): PASS (STT Snapshot Hash included, Raw Text disposed)
-- Fixpack C2 (Abort Flow): PASS (409 Terminal Guard verified)
-- Fixpack D (GPU Atomicity): PASS (Redis Lua stress test 100x OK)
+### Phase 4: DONE LOCKED (Statistical & Audit Hardening)
+- PG-authoritative aggregation, append-only audit, and drift protection.
+- DECIDED-only 집계 및 evaluation_policy='EVALUATIVE' 물리적 격리.
+- REPEATABLE READ 집계 및 Granular Cache Invalidation.
+- Drift Guard (Late Mutation 409) 및 Decision Override 멱등성.
+- PG Append-only Audit Timeline 및 Cross-consistency check (35/35 PASS).
+- **Phase 4 Done Lock Achieved.**
+
+### Phase 5: NOT STARTED (Advanced Integrity Locks)
 
 **프로젝트 진행률:**
 - Core Engine: 100%
 - Multimodal Engine: 100% (DONE LOCK)
+- Statistical & Audit Engine: 100% (DONE LOCK)
 - Frontend: 10% (Infrastructure & Auth Pull ready)
 - Deployment Hardening: Pending
 

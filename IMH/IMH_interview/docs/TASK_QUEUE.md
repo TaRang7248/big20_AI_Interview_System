@@ -325,8 +325,25 @@
 ## ACTIVE
 
 ### PHASE-4-PLAN: Statistical + Audit Hardening
-- Goal: PG-authoritative 통계 대시보드 및 관리자 감사 타임라인 설계.
+- Goal: PG-authoritative 통계 대시보드 및 관리자 감사 타임라인 설계 및 구현.
+- Status: DONE
+- Verification: scripts/verify_phase4_contracts.py Pass (35/35 PASS)
+- Slices:
+  - Slice 1: Aggregate Stats Service (PG-Only) - DONE
+  - Slice 2: Rebuild & Idempotency Safety - DONE
+  - Slice 3: Audit Timeline & Wiring - DONE
+  - Slice 4: Drift Guard & Decision Override - DONE
+
+---
+
+### Phase 5: Planning (ACTIVE)
+
+#### TASK-Phase5-PLAN: Advanced Integrity Locks
+- Goal: Enterprise-grade 시스템 안정성 및 무결성 강화 가드 설계.
 - Status: ACTIVE
+- Scope: Plan Only
+
+---
 
 ### TASK-FRONT-001: WebRTC Frontend MVP 구현
 - Goal: 백엔드 멀티모달 API를 소비하는 프론트엔드 연동 개발.

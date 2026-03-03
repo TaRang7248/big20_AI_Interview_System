@@ -22,9 +22,19 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 
 from IMH.api.auth import require_user
+from packages.imh_service.audit_wiring import AuditWiringService
 
 logger = logging.getLogger("imh.interviews")
 router = APIRouter(prefix="/interviews", tags=["Interviews"])
+
+# Singleton audit wiring service (initialized lazily on first use)
+_audit: Optional[AuditWiringService] = None
+
+def _get_audit() -> AuditWiringService:
+    global _audit
+    if _audit is None:
+        _audit = AuditWiringService()
+    return _audit
 
 INTERVIEW_PHASES = ["자기소개", "지원동기", "직무역량", "경험/사례", "문제해결", "마무리"]
 
@@ -201,6 +211,10 @@ async def create_interview(
                 )
 
             logger.info("Session created session_id=%s user=%s trace=%s", dto.session_id, user_id, trace_id)
+            # OB-1: SESSION_CREATED – fire-and-forget audit event
+            _get_audit().on_session_created(
+                session_id=dto.session_id, trace_id=trace_id, actor_id=user_id
+            )
             return {
                 "session_id": dto.session_id,
                 "message": "Interview started",
@@ -273,9 +287,26 @@ async def update_interview(
     service: "SessionService" = Depends(get_session_service)
 ):
     """
-    Update interview session config. Section 3 (C3): Mode Immutability Guard.
+    Update interview session config.
+    Guard order (applied before any field mutation):
+      1. Late Mutation Guard (Phase 4 Slice 4): DECIDED sessions → 409 E_LATE_MUTATION_FORBIDDEN
+      2. C3 Mode Immutability Guard: non-APPLIED sessions → 409 E_MODE_IMMUTABLE
     """
+    from packages.imh_service.drift_guard import check_late_mutation_forbidden
     trace_id = _get_trace_id(request)
+
+    # Phase 4 Slice 4 – Late Mutation Guard (highest priority)
+    late_error = await check_late_mutation_forbidden(interview_id)
+    if late_error:
+        raise HTTPException(
+            status_code=409,
+            detail=late_error["detail"],
+            headers={
+                "X-Error-Code": "E_LATE_MUTATION_FORBIDDEN",
+                "X-Trace-Id": trace_id,
+            },
+        )
+
     session = service.get_session(interview_id)
     if not session:
         raise HTTPException(status_code=404, detail="Interview not found")
@@ -289,9 +320,8 @@ async def update_interview(
                 headers={"X-Error-Code": "E_MODE_IMMUTABLE", "X-Trace-Id": trace_id}
             )
 
-    # Note: In a full impl, we would update the job_policy_snapshot in the context.
-    # For this fixpack, we are primarily enforcing the guard. 
     return {"status": "success", "message": "No changes made (Guard only implemented)"}
+
 
 
 @router.post("/{interview_id}/abort")
@@ -307,6 +337,13 @@ async def abort_interview(
     trace_id = _get_trace_id(request)
     try:
         dto = service.abort_session(interview_id, reason="AUDIO_FAIL")
+        # OB-5: SESSION_ABORTED – fire-and-forget audit event
+        _get_audit().on_session_aborted(
+            session_id=interview_id,
+            trace_id=trace_id,
+            abort_reason="AUDIO_FAIL",
+            actor_id=user_id,
+        )
         return {
             "session_id": dto.session_id,
             "status": dto.status,
@@ -388,6 +425,16 @@ async def submit_chat(
     except Exception as e:
          logger.error(f"Error submitting chat for {interview_id}: {e}")
          raise HTTPException(status_code=500, detail=str(e))
+
+    trace_id = _get_trace_id(request)
+    # OB-2: TURN_SUBMITTED — fire-and-forget audit event
+    turn_index = getattr(updated_session, "current_question_index", 0) or 0
+    _get_audit().on_turn_submitted(
+        session_id=interview_id,
+        trace_id=trace_id,
+        turn_index=turn_index,
+        actor_id=user_id,
+    )
 
     now = datetime.now()
     
