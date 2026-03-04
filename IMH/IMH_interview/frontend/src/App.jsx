@@ -22,6 +22,7 @@ import AdminPostingNew from './pages/admin/AdminPostingNew'
 import AdminPostingEdit from './pages/admin/AdminPostingEdit'
 import AdminPostingDetail from './pages/admin/AdminPostingDetail'
 import AdminCandidateDetail from './pages/admin/AdminCandidateDetail'
+import AdminJobStats from './pages/admin/AdminJobStats'
 
 // Layout
 import AppLayout from './components/AppLayout'
@@ -67,6 +68,8 @@ function AppRoutes() {
             <Route path="/admin/postings/:postingId/edit" element={<PrivateRoute adminOnly><AppLayout><AdminPostingEdit /></AppLayout></PrivateRoute>} />
             <Route path="/admin/postings/:postingId" element={<PrivateRoute adminOnly><AppLayout><AdminPostingDetail /></AppLayout></PrivateRoute>} />
             <Route path="/admin/postings/:postingId/candidates/:userId" element={<PrivateRoute adminOnly><AppLayout><AdminCandidateDetail /></AppLayout></PrivateRoute>} />
+            {/* Slice E: Stats Dashboard (Stats Snapshot Drift Guard — independent from session projection) */}
+            <Route path="/admin/jobs/:jobId/stats" element={<PrivateRoute adminOnly><AppLayout><AdminJobStats /></AppLayout></PrivateRoute>} />
 
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="/login" replace />} />

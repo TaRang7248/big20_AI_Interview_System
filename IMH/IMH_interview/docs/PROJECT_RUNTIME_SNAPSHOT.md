@@ -148,3 +148,13 @@
 - **안정성 수준**: Beta (내부 테스트 가능, TASK-030/031로 핵심 계약 보호 강화)
 - **외부 운영 가능 여부**: 불가 (운영 관측성 및 보안 강화 필요)
 - **멀티모달 준비도**: 60% (분석 엔진은 완료, 평가 반영 고도화 필요)
+
+---
+
+# 9. Frontend Consumer Contract (Locked)
+프론트엔드는 서버 권위를 안전하게 소비하기 위해 아래 런타임 행동을 강제한다.
+- **SSE Consumption**: SSE는 오직 Projection 업데이트 알림(Change Detection) 용도로만 사용한다. 프론트엔드가 자체적으로 상태를 추론하거나 병합(Merge)하지 않는다.
+- **Pull Lock Suppression**: Authority Pull(Hydrate) 진행 중에는 수신된 SSE 이벤트를 즉시 폐기한다. 이는 Pull 완료 후 수신된 데이터가 SSE보다 최신임을 보장하기 위함이다. (Overwrite Atomicity)
+- **SAFE_MODE Recovery**: API/SSE 오류 시 렌더링을 중단하되 마지막 성공 스냅샷을 유지한다. F5 새로고침 시 Store를 초기화하고 반드시 Authority Pull Step 1부터 다시 수행한다. (No-Local-Persistence)
+- **Mutation Guard**: ABORTED/DECIDED 등 터미널 상태 진입 시 사용자 응답 및 조작 DOM을 물리적으로 제거하여 추가적인 Mutation 발생을 원천 차단한다.
+- **Stats TTL**: 관리자 통계(Stats) 데이터는 60초 TTL(Frontend-side)을 가지며, 만료 후 자동 재시도 없이 사용자 수동 새로고침만 허용한다. (Stale Detection)

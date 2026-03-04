@@ -104,6 +104,21 @@
 - Evaluation Integration = Deterministic Input Hash (C1)
 - Terminal States = ABORTED (C2)
 
+### 2.10 Frontend Integration (TASK-FRONT-001) - DONE
+프론트엔드는 서버의 권위(Projection)를 소비하는 계층으로 구축되었으며, 아래 결정성 계약을 강제한다.
+- **Authority Pull 2-Step**: 모든 세션 진입 시 Step 1(Metadata fetch) 성공 후 Step 2(Projection hydrate)를 수행한다.
+- **Pull Lock SSE Suppression**: Authority Pull 진행 중 도착하는 SSE 이벤트는 폐기한다 (Stale 오염 방지).
+- **Projection Full Overwrite**: 서버 Projection 수신 시 부분 병합(Merge) 없이 전체 내용을 Deep-Replace 한다.
+- **Initial Hydration Guard**: 세션 생성 직후 서버가 `current_question`을 제공하기 전까지 질문 영역 DOM을 생성하지 않는다.
+- **Terminal Mutation Guard**: `ABORTED/DECIDED/EVALUATED` 상태 진입 시 사용자 입력(Mutation) DOM을 즉시 제거한다.
+- **GPU 429 Countdown**: GPU 큐 초과 시 Retry-After 기반 카운트다운 배너를 표시하며, 자동 재전송 없이 사용자 수동 재시도만 허용한다.
+- **Capability Drift Freeze**: 세션 시작 시점의 Capability(Video, WebRTC 등)를 동결하며, 진행 중 정책 변경을 수용하지 않는다.
+- **Result Visibility Guard**: ACTUAL/PRACTICE 모드에 따른 결과 노출 정책을 DOM 제거 수준에서 강제한다.
+- **Admin Boundary**: 지원자(Candidate)와 관리자(Admin)의 Store를 물리적으로 분리하며, 관리자 필드가 지원자 화면에 유출되지 않도록 차단한다.
+- **Stats TTL 60s**: 관리자 통계는 60초 TTL을 가지며, 만료 시 Stale 표시 및 수동 새로고침만 허용한다.
+
+**원칙**: 프론트엔드는 상태를 생성하거나 추측하지 않으며, 오직 서버의 권위를 소비만 한다.
+
 ---
 
 ## 3. 확정된 핵심 계약 (변경 금지)
@@ -173,6 +188,10 @@
   - Redis Streams, GPU Mutex, STT/Vision/Emotion/Audio Workers, WebRTC API 구현 완료.
   - Verification: `scripts/verify_mm_cli.py` Pass.
 - TASK-016 (TTS Provider): 스트리밍 아키텍처 연동 기능이 TASK-M에 통합되어 완료됨. (gTTS Facade)
+- **TASK-FRONT-001 (Frontend Integration)**: [DONE]
+  - Slice A~E 전 범위 구현 및 빌드 검증 완료.
+  - 결정성 Store 및 SSE Suppression 계약 적용.
+  - 관리자 통계, 감사 타임라인, 결정 Override UI 구현 완료.
 
 
 ---

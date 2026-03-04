@@ -346,13 +346,27 @@
 ---
 
 ### TASK-FRONT-001: WebRTC Frontend MVP 구현
-- Goal: 백엔드 멀티모달 API를 소비하는 프론트엔드 연동 개발.
+- Goal: 백엔드 멀티모달 및 관리자 API를 소비하는 프론트엔드 연동 개발.
+- Status: DONE
 - Scope:
-    - WebRTC Frontend MVP 구현
-    - Projection Dashboard (Gaze/Emotion)
-    - TTS Audio Playback
-    - Resume Upload UI
-    - Session Lifecycle UI
+    - Authority Pull 2-Step Protocol 구현 (Store Sync)
+    - Multimodal (Video/Gaze/Emotion) Projection 연동
+    - Result Screen (Actual/Practice 정책 반영)
+    - Admin Views (Audit Timeline, Decision Override)
+    - Admin Stats (TTL 60s, Job Stats Dashboard)
+- Verification: npm run build Pass & Slice A-E 수동 검증 통과
+
+---
+
+## NEXT
+
+### TASK-QA-001: 시스템 통합 테스트 및 리그레션 검증
+- Goal: 프론트 통합 이후 전체 사용자 시나리오(V1-V6) 및 관리자 운영 흐름 검증.
+- Scope:
+    - ACTUAL/PRACTICE 모드별 End-to-End 테스트
+    - 네트워크 지연/단절 시 SAFE_MODE 및 Recovery 동작 확인
+    - 다중 탭 동시 접속 시 Cross-tab guard 동작 확인
+    - Admin Decision Override 후 통계 반영 정합성 확인
 - Status: BACKLOG
 
 ---

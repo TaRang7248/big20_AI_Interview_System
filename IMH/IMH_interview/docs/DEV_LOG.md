@@ -1240,3 +1240,21 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
     - Drift Guard: DECIDED 세션 수정 시 409 E_LATE_MUTATION_FORBIDDEN 즉각 반환 확인.
     - Override: DECISION_OVERRIDDEN 멱등성 및 캐시 무효화 트리거 검증 완료.
 - **상태**: DONE LOCKED
+
+## 2026-03-04
+
+### TASK-FRONT-001 프론트엔드 통합 (Frontend Integration) 완료
+- **요약**: 백엔드 멀티모달 및 관리자 엔진을 소비하는 제품 수준의 UI 통합 개발 완료 (Slice A~E).
+- **변경 사항**:
+    - `Slice A (Core)`: `sessionStore.js`, `useSSEProjection.js`, `InterviewSession.jsx` (Pull Lock, SSE Suppression, Hydration Guard)
+    - `Slice B (Video/MM)`: `VideoInterviewSession.jsx` (WebRTC Teardown, Capability Drift Freeze)
+    - `Slice C (Result)`: `InterviewResult.jsx` (ACTUAL/PRACTICE Visibility Guard, No Assumption Rule)
+    - `Slice D (Admin Views)`: `AdminCandidateDetail.jsx`, `AdminAuditTimeline.jsx`, `AdminDecisionOverride.jsx` (Admin Boundary, Audit Timeline)
+    - `Slice E (Stats)`: `AdminJobStats.jsx`, `App.jsx` (Stats TTL 60s, Stale Guard, Route Integration)
+- **핵심 계약 적용 사유**:
+    - **Pull Lock SSE 폐기**: Authority Pull 도중 도착한 stale 이벤트로 인한 스냅샷 오염 방지(Overwrite Atomicity).
+    - **Initial Hydration Guard**: 서버 질문 확정 전 빈 UI 또는 템플릿 노출 차단.
+    - **Terminal Mutation Guard**: 세션 종료 후 비정상적인 추가 입력 시도 원천 차단.
+- **검증 증거**:
+    - **빌드 검증**: Slice A~E 수동 통합 시마다 `npm run build` 수행 및 통과 (최종 122 modules).
+    - **계약 검증**: 각 슬라이스별 Contract Checklist 기반 수동 검증 완료.
