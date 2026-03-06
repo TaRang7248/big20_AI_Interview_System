@@ -354,7 +354,9 @@
     - Result Screen (Actual/Practice 정책 반영)
     - Admin Views (Audit Timeline, Decision Override)
     - Admin Stats (TTL 60s, Job Stats Dashboard)
-- Verification: npm run build Pass & Slice A-E 수동 검증 통과
+    - Admin Interview Policy Panel & Policy Freeze
+    - Resume Summary Transparency UI
+- Verification: npm run build Pass & 수동 통합 검증 통과 (2026-03-06)
 
 ---
 
@@ -374,4 +376,28 @@
 ### TASK-032 tag_code 허용 값 제약 및 무결성 강화
 - Purpose: 평가 태그(tag_code)가 정의된 범위를 벗어나지 않도록 DB 및 로직 레벨에서 무결성 강제 (R-2 대응)
 - Scope: `evaluation_scores` 테이블 스키마 및 `RubricEvaluator` 검증 로직
+- Status: BACKLOG
+
+---
+
+## BACKLOG (Future Tasks)
+
+### TASK-FUTURE-001: Multimodal 실데이터 검증
+- Goal: 실제 사용자 데이터를 통한 Vision/Audio 분석 지표 오차 측정 및 보정.
+- Status: BACKLOG
+
+### TASK-FUTURE-002: STT 모델 및 지연 최적화
+- Goal: Faster-Whisper 지연 시간(Latency) 단축 및 특정 발화 누락 개선.
+- Status: BACKLOG
+
+### TASK-FUTURE-003: Vision 감정 분석 정확도 개선
+- Goal: 표정 및 시선 분석 모델 정교화와 환경(조명, 각도) 강건성 확보.
+- Status: BACKLOG
+
+### TASK-FUTURE-004: UI/UX 디자인 고도화
+- Goal: 사용자 피드백 기반 모던한 인터렉션 및 리치 애니메이션 추가.
+- Status: BACKLOG
+
+### TASK-FUTURE-005: Production Deployment 준비
+- Goal: Docker 컨테이너화, GPU 가속 환경 프로비저닝 및 보안 하드닝.
 - Status: BACKLOG

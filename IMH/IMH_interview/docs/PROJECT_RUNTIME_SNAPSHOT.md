@@ -7,13 +7,19 @@
 
 ### Active Runtime Components
 
+- **Interview Engine**: `SessionEngine`, `PhaseManager` 기반 상태 전이.
+- **Question Generator**: LLM + QBank(RAG) 하이브리드 생성기.
+- **RAG System**: `pgvector` 기반 질문 유사도 검색 및 주입.
+- **Resume Analyzer**: `ResumeSummarizer` 기반 지원자 이력서 요약.
+- **Evaluation Engine**: 루브릭 기반 점수 산출 및 결정성 해시(`C1`) 검증.
 - **Ollama LLM**: `exaone3.5:2.4b` (Main Reasoning)
 - **Faster-Whisper**: GPU Resident (v3-turbo)
-- **Redis**: Streams (MM Data) + Pub/Sub (SSE) + Mutex (GPU/Concurrent)
-- **PostgreSQL**: Authority Persistence
-- **CPU Workers**: Vision (MediaPipe), Emotion (DeepFace), Audio (Parselmouth)
-- **SSE Broadcaster**: Real-time Projection push
-- **WebRTC Signaling**: SDP Offer/Answer Endpoint
+- **Redis Runtime Layer**: Streams (MM) + Pub/Sub (SSE) + Mirroring (Cache).
+- **PostgreSQL Persistence**: Authority Store (Primary Write).
+- **SSE Streaming**: Real-time Projection push.
+- **Frontend Admin Panel**: 정책 제어, 통계, 감사 타임라인 대시보드.
+- **Candidate Interview Client**: WebRTC 기반 실시간 인터뷰 UI.
+- **Multimodal Pipeline**: Vision(DeepFace/MP), Audio(Parselmouth), STT 합산 계층.
 - **Capability Gating**: `video_enabled=false`, `webrtc_enabled=false` (Default OFF)
 
 ### Runtime Constraints
@@ -48,8 +54,9 @@
 - **질문 생성**: STATIC(Banked) + GENERATED(LLM) 하이브리드. RAG Fallback 적용.
 - **RAG 적용**: `imh_qbank` 내 Vector DB(pgvector) 기반 유사 질문 탐색 및 Context 주입.
 - **Fallback**: LLM 실패 시 `Static -> Emergency` 순차적 폴백 트리거.
-- **Persona**: `interviews` 테이블의 `persona` 컬럼 및 공고 정책(`JobPolicy`)에 기반함.
-- **Prompt**: `imh_service/prompt/` 내 템플릿화되어 관리됨.
+- **Persona**: `interviews` 또는 `jobs` (Policy Snapshot) 내 `persona` 필드 사용. ('professional', 'friendly', 'strict')
+- **Fixed Questions**: 공고 정책(`JobPolicy`) 내 고정 질문 목록 최우선 삽입 (LLM 우회).
+- **Prompt**: `imh_providers/question.py` 내 동적 프롬프트 생성 (Job Title 기반 하드코딩 제거).
 - **동기/비동기**: API 응답은 비동기이나, 내부 LLM 요청은 `idempotency` 제어 하에 동기적 처리 흐름을 가짐.
 - **Wiring Layer (TASK-035)**:
   - Snapshot-first weight evaluation (Fail-Fast on mismatch)

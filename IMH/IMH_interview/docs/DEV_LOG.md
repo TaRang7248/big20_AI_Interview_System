@@ -1236,3 +1236,19 @@ Dual Write 제거는 TASK-027 안정화 이후 수행한다.
 - **검증 증거**:
     - **빌드 검증**: Slice A~E 수동 통합 시마다 `npm run build` 수행 및 통과 (최종 122 modules).
     - **계약 검증**: 각 슬라이스별 Contract Checklist 기반 수동 검증 완료.
+
+## 2026-03-06
+
+### Frontend Policy Control Panel + Data Governance Fix
+- **요약**: 관리자 AI 정책 설정 UI 고도화, Policy Freeze 구현 및 이력서 요약 투명성 확보.
+- **변경 사항**:
+    - **Persona/Fixed Q/Weights UI**: `AdminInterviewPolicyPanel.jsx` 신규 생성 및 공고 생성/수정 UI 통합.
+    - **Wiring Flags**: 이력서 기반 질문, RAG, 멀티모달 분석 기능을 관리자 UI에서 실시간 제어(On/Off) 가능하도록 구현.
+    - **Policy Freeze**: `PUBLISHED/CLOSED` 공고에 대해 AI 민감 정책 필드(질문 수, 가중치 등) 수정을 UI 레벨에서 잠금.
+    - **Resume Summary Transparency**: `CandidateResume.jsx`에 AI가 분석한 이력서 요약본을 지원자가 직접 확인할 수 있는 투명성 패널 추가.
+    - **Hardcoding Fix**: `question.py` 내 "Job Category: Developer" 하드코딩을 제거하고 `job_title` 동적 참조로 교체.
+- **검증 결과**:
+    - **npm run build**: **Pass** (123 modules).
+    - **Data Governance**: 공고 게시 후 정책 수정 필드 잠금 확인.
+    - **Transparency**: 이력서 업로드 후 서버 파싱 결과가 지원자 화면에 즉시 노출됨을 확인.
+
