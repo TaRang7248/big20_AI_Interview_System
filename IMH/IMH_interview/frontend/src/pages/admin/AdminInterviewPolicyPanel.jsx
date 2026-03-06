@@ -29,11 +29,14 @@ export default function AdminInterviewPolicyPanel({ form, onChange, isLocked }) 
     }
 
     function handleFixedQAdd() {
-        const newQ = prompt('추가할 고정 질문을 입력하세요:')
-        if (newQ && newQ.trim()) {
-            const prev = form.fixed_questions || []
-            onChange({ target: { name: 'fixed_questions', value: [...prev, newQ.trim()] } })
-        }
+        const prev = form.fixed_questions || []
+        onChange({ target: { name: 'fixed_questions', value: [...prev, ''] } })
+    }
+
+    function handleFixedQChange(idx, value) {
+        const prev = form.fixed_questions || []
+        const updated = prev.map((q, i) => i === idx ? value : q)
+        onChange({ target: { name: 'fixed_questions', value: updated } })
     }
 
     function handleFixedQRemove(idx) {
@@ -183,7 +186,15 @@ export default function AdminInterviewPolicyPanel({ form, onChange, isLocked }) 
                                 padding: '6px 10px', background: 'rgba(255,255,255,0.04)',
                                 borderRadius: 6, marginBottom: 4, fontSize: 13,
                             }}>
-                                <span style={{ flex: 1, color: 'var(--text-primary)' }}>{i + 1}. {q}</span>
+                                <span style={{ color: 'var(--text-secondary)', minWidth: 20 }}>{i + 1}.</span>
+                                <input
+                                    className="form-input"
+                                    style={{ flex: 1, fontSize: 13, padding: '4px 8px' }}
+                                    value={q}
+                                    onChange={e => handleFixedQChange(i, e.target.value)}
+                                    placeholder="고정 질문을 입력하세요"
+                                    disabled={isLocked}
+                                />
                                 {!isLocked && (
                                     <button
                                         type="button"

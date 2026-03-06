@@ -140,6 +140,7 @@ function normalizeError(err, traceId) {
 export const authApi = {
     login: (data) => api.post('/auth/login', data),
     signup: (data) => api.post('/auth/signup', data),
+    checkUsername: (username) => api.get('/auth/check-username', { params: { username } }),
     me: () => api.get('/auth/me'),
     updateAccount: (data) => api.patch('/auth/account', data),
     logout: () => api.post('/auth/logout'),

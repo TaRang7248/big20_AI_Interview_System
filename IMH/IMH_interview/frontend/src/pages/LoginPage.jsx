@@ -21,7 +21,7 @@ export default function LoginPage() {
             const user = await login(form.username, form.password)
             navigate(user.user_type === 'ADMIN' ? '/admin/postings' : '/candidate/home')
         } catch (err) {
-            const msg = err.response?.data?.detail || '아이디 또는 비밀번호가 일치하지 않습니다.'
+            const msg = err.message || err.response?.data?.detail || '아이디 또는 비밀번호가 일치하지 않습니다.'
             setError(msg)
         } finally {
             setLoading(false)

@@ -22,6 +22,8 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 
 from IMH.api.auth import require_user
+from IMH.api.dependencies import get_session_service
+from packages.imh_service.session_service import SessionService
 from packages.imh_service.audit_wiring import AuditWiringService
 
 logger = logging.getLogger("imh.interviews")
