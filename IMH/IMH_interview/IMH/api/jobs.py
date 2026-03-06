@@ -56,6 +56,13 @@ class JobCreateRequest(BaseModel):
     mode: str = "ACTUAL"
     requirements: Optional[List[str]] = None
     preferences: Optional[List[str]] = None
+    # ── AI Policy fields (Frozen at Publish) ──────────────────────────────
+    evaluation_weights: Optional[dict] = None  # e.g. {"job": 40.0, "comm": 30.0, "attitude": 30.0}
+    persona: Optional[str] = "professional"    # 'professional' | 'friendly' | 'strict'
+    fixed_questions: Optional[List[str]] = None  # Always-inject questions list
+    wiring_resume_q_enabled: Optional[bool] = True
+    wiring_rag_enabled: Optional[bool] = True
+    wiring_multimodal_enabled: Optional[bool] = True
 
 
 class JobUpdateRequest(BaseModel):
@@ -196,8 +203,14 @@ async def create_job(
             "description": req.description or "",
             "requirements": req.requirements or [],
             "preferences": req.preferences or [],
-            "evaluation_weights": {"job": 40.0, "comm": 30.0, "attitude": 30.0},
+            "evaluation_weights": req.evaluation_weights or {"job": 40.0, "comm": 30.0, "attitude": 30.0},
             "result_exposure": "AFTER_14_DAYS",
+            # ── New AI Policy Fields ─
+            "persona": req.persona or "professional",
+            "fixed_questions": req.fixed_questions or [],
+            "wiring_resume_q_enabled": req.wiring_resume_q_enabled if req.wiring_resume_q_enabled is not None else True,
+            "wiring_rag_enabled": req.wiring_rag_enabled if req.wiring_rag_enabled is not None else True,
+            "wiring_multimodal_enabled": req.wiring_multimodal_enabled if req.wiring_multimodal_enabled is not None else True,
         }
         deadline = None
         if req.deadline:

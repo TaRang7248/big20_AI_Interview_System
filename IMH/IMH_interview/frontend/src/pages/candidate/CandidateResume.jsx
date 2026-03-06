@@ -131,30 +131,70 @@ export default function CandidateResume() {
                 {loading ? (
                     <div className="loading"><div className="spinner" /></div>
                 ) : resume ? (
-                    <div className="card">
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            현재 등록된 이력서
+                    <div>
+                        <div className="card">
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                현재 등록된 이력서
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div style={{ fontSize: 32 }}>📎</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: 600 }}>{resume.file_name}</div>
+                                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                                        {formatSize(resume.file_size)} • {new Date(resume.uploaded_at).toLocaleDateString('ko-KR')}
+                                    </div>
+                                </div>
+                                <span className="badge badge-published">등록됨</span>
+                                {/* Phase 2-2: Parse failure badge */}
+                                {(parseStatus === 'FAILED' || resume.parse_status === 'FAILED') && (
+                                    <span
+                                        className="badge"
+                                        style={{ background: 'rgba(255,152,0,0.2)', color: '#ff9800', border: '1px solid rgba(255,152,0,0.4)' }}
+                                        title="이력서 내용 분석에 실패했습니다. 면접은 정상 진행됩니다."
+                                    >
+                                        ⚠ 분석 실패
+                                    </span>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div style={{ fontSize: 32 }}>📎</div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: 600 }}>{resume.file_name}</div>
-                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                                    {formatSize(resume.file_size)} • {new Date(resume.uploaded_at).toLocaleDateString('ko-KR')}
+
+                        {/* Resume Summary Transparency Panel */}
+                        {resume.resume_summary_snapshot && (
+                            <div className="card" style={{ marginTop: 16, border: '1px solid rgba(59,130,246,0.25)' }}>
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 8,
+                                    fontSize: 12, fontWeight: 700, color: '#60a5fa',
+                                    textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12,
+                                }}>
+                                    <span>🔍</span>
+                                    <span>AI가 읽는 이력서 요약</span>
+                                    <span style={{
+                                        fontSize: 10, padding: '1px 7px', borderRadius: 99,
+                                        background: 'rgba(59,130,246,0.12)', color: '#60a5fa',
+                                        border: '1px solid rgba(59,130,246,0.25)',
+                                    }}>데이터 투명성</span>
+                                </div>
+                                <p style={{
+                                    fontSize: 13, color: '#94a3b8', lineHeight: 1.7,
+                                    whiteSpace: 'pre-wrap', margin: 0,
+                                    background: 'rgba(0,0,0,0.15)', borderRadius: 8,
+                                    padding: '12px 14px',
+                                }}>
+                                    {resume.resume_summary_snapshot}
+                                </p>
+                                <p style={{ fontSize: 11, color: '#475569', marginTop: 8, marginBottom: 0 }}>
+                                    💡 위 내용이 면접 질문 생성에 활용됩니다. 이력서를 재업로드하면 업데이트됩니다.
+                                </p>
+                            </div>
+                        )}
+                        {resume.resume_summary_snapshot === '' && resume.parse_status === 'FAILED' && (
+                            <div className="card" style={{ marginTop: 16, border: '1px solid rgba(234,179,8,0.25)' }}>
+                                <div style={{ fontSize: 13, color: '#fde047' }}>
+                                    ⚠️ 이력서 텍스트 추출에 실패하여 AI 질문에 이력서 내용이 반영되지 않습니다.
+                                    PDF 또는 TXT 파일로 다시 업로드해 주세요.
                                 </div>
                             </div>
-                            <span className="badge badge-published">등록됨</span>
-                            {/* Phase 2-2: Parse failure badge */}
-                            {(parseStatus === 'FAILED' || resume.parse_status === 'FAILED') && (
-                                <span
-                                    className="badge"
-                                    style={{ background: 'rgba(255,152,0,0.2)', color: '#ff9800', border: '1px solid rgba(255,152,0,0.4)' }}
-                                    title="이력서 내용 분석에 실패했습니다. 면접은 정상 진행됩니다."
-                                >
-                                    ⚠ 분석 실패
-                                </span>
-                            )}
-                        </div>
+                        )}
                     </div>
                 ) : (
                     <div className="empty-state" style={{ padding: '32px' }}>

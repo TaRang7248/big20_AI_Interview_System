@@ -1,14 +1,23 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { jobsApi } from '../../services/api'
+import AdminInterviewPolicyPanel from './AdminInterviewPolicyPanel'
 
 export default function AdminPostingNew() {
     const navigate = useNavigate()
     const [form, setForm] = useState({
         title: '', company: '', description: '', location: '',
         headcount: '', deadline: '', tags: '',
-        total_question_limit: 10, question_timeout_sec: 120,
+        // AI Policy fields (Frozen at Publish)
+        total_question_limit: 10,
+        question_timeout_sec: 120,
         mode: 'ACTUAL',
+        persona: 'professional',
+        evaluation_weights: { job: 40, comm: 30, attitude: 30 },
+        fixed_questions: [],
+        wiring_resume_q_enabled: true,
+        wiring_rag_enabled: true,
+        wiring_multimodal_enabled: true,
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -21,6 +30,9 @@ export default function AdminPostingNew() {
     async function handleSubmit(e) {
         e.preventDefault()
         if (!form.title) { setError('공고 제목은 필수입니다.'); return }
+        if (!form.description || form.description.length < 10) {
+            setError('공고 설명은 10자 이상 입력해야 합니다.'); return
+        }
         setLoading(true)
         setError('')
         try {
@@ -47,9 +59,16 @@ export default function AdminPostingNew() {
                 <p className="page-subtitle">새로운 채용 공고를 작성합니다.</p>
             </div>
 
-            <div style={{ maxWidth: 600 }}>
+            <div style={{ maxWidth: 680 }}>
                 <form onSubmit={handleSubmit} className="card">
                     {error && <div className="alert alert-error">{error}</div>}
+
+                    {/* ── 공고 입력 정보 (게시 후 수정 지양) ── */}
+                    <div style={{ marginBottom: 8 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 14 }}>
+                            📋 공고 기본 정보
+                        </div>
+                    </div>
 
                     <div className="form-group">
                         <label className="form-label">공고 제목 <span style={{ color: 'var(--danger)' }}>*</span></label>
@@ -79,8 +98,15 @@ export default function AdminPostingNew() {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">공고 설명</label>
-                        <textarea name="description" className="form-input" style={{ minHeight: 100, resize: 'vertical' }} placeholder="직무 설명, 자격 요건 등" value={form.description} onChange={handleChange} />
+                        <label className="form-label">공고 설명 <span style={{ color: 'var(--danger)' }}>*</span></label>
+                        <textarea
+                            name="description"
+                            className="form-input"
+                            style={{ minHeight: 100, resize: 'vertical' }}
+                            placeholder="직무 설명, 자격 요건 등 (LLM 질문 생성에 활용됩니다)"
+                            value={form.description}
+                            onChange={handleChange}
+                        />
                     </div>
 
                     <div className="form-group">
@@ -88,28 +114,14 @@ export default function AdminPostingNew() {
                         <input name="tags" className="form-input" placeholder="Python, React, 경력 3년" value={form.tags} onChange={handleChange} />
                     </div>
 
-                    <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: 20, marginTop: 8, marginBottom: 20 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 16, color: 'var(--text-secondary)' }}>면접 설정</div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">질문 수</label>
-                                <input name="total_question_limit" className="form-input" type="number" min="1" max="20" value={form.total_question_limit} onChange={handleChange} />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">답변 제한 시간 (초)</label>
-                                <input name="question_timeout_sec" className="form-input" type="number" min="30" value={form.question_timeout_sec} onChange={handleChange} />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">면접 모드</label>
-                            <select name="mode" className="form-select" value={form.mode} onChange={handleChange}>
-                                <option value="ACTUAL">실전 (ACTUAL)</option>
-                                <option value="PRACTICE">연습 (PRACTICE)</option>
-                            </select>
-                        </div>
-                    </div>
+                    {/* ── AI 정책 설정 (Frozen at Publish) ── */}
+                    <AdminInterviewPolicyPanel
+                        form={form}
+                        onChange={handleChange}
+                        isLocked={false}
+                    />
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-4" style={{ marginTop: 24 }}>
                         <button type="button" className="btn btn-secondary flex-1" onClick={() => navigate('/admin/postings')}>
                             취소
                         </button>

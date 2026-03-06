@@ -214,7 +214,7 @@ async def get_resume(user_id: str = Depends(require_user)):
     conn = await asyncpg.connect(**params)
     try:
         row = await conn.fetchrow(
-            """SELECT resume_id, file_name, file_size, parse_status, uploaded_at
+            """SELECT resume_id, file_name, file_size, parse_status, resume_summary_snapshot, uploaded_at
                FROM resumes WHERE user_id=$1 ORDER BY uploaded_at DESC LIMIT 1""",
             user_id
         )

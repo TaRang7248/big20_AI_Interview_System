@@ -241,28 +241,6 @@ Plan 수립
   - JSON Schema output 필드 존재여부 확인 완료
 - **로그 파일**: `logs/agent/verify_task_011.log`
 
-
-### TASK-025 RAG Fallback 엔진 통합 (RAG Fallback Integration)
-- **요약**: Session Engine 내에 `QuestionGenerator` (RAG)와 `QuestionBankService` (Fallback)를 통합하여, 질문 생성 실패 시 안전하게 정적 질문으로 전환하는 로직 구현.
-- **변경 사항**:
-  - `packages/imh_session/dto.py`: `SessionQuestion` Value Object 및 `SessionQuestionType` 정의 (Snapshot 구성요소).
-  - `packages/imh_providers/question.py`: `QuestionGenerator` 인터페이스 및 Mock 구현.
-  - `packages/imh_session/engine.py`: `_get_next_question` 메서드 구현 (RAG -> Fallback -> Emergency 전략).
-  - `packages/imh_service/session_service.py` & `IMH/api/dependencies.py`: 의존성 주입(DI) 구조 업데이트.
-  - `scripts/verify_task_025.py`: 4가지 시나리오(Success, Fallback, Critical, Snapshot) 검증 스크립트 작성.
-- **검증 결과**:
-  - `python scripts/verify_task_025.py`: **Pass**
-    1. **Normal Generation**: RAG Success -> Source `GENERATED` 확인.
-    2. **Explicit Fallback**: RAG Failure -> Source `STATIC` (from QBank) 확인.
-    3. **Critical Failure**: QBank Empty -> Emergency Message (Safe Fallback) 확인.
-    4. **Snapshot Independence**: 질문 생성 후 저장된 세션 데이터의 불변성 확인.
-- **주요 설계 반영**:
-  - **Single Authority**: Fallback 결정은 오직 Session Engine이 수행.
-  - **Snapshot Integrity**: 생성된 질문은 `SessionQuestion` Value Object로 스냅샷에 포함되어 영구 보존.
-  - **Fail-Fast**: RAG 실패 시 즉시 Fallback 전환 (User Latency 최소화).
-- **로그 및 산출물**:
-  - `packages/imh_session/` 및 `packages/imh_providers/` 업데이트.
-
 ### TASK-012 평가 결과 리포팅 / 해석 계층 설계 (Reporting Layer)
 - **요약**: `packages/imh_report` 패키지 구현. Evaluation Result를 입력받아 사용자 친화적인 리포트(JSON)를 생성하는 Logic 구현.
 - **변경 사항**:

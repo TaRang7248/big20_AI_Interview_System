@@ -38,12 +38,28 @@ class LLMQuestionGenerator(QuestionGenerator):
         # Resolve to string name for comparison (SessionStepType enum or plain str)
         step_type_name = step_type_val.value if hasattr(step_type_val, "value") else str(step_type_val)
 
-        system_prompt = (
-            "You are a professional technical interviewer AI. "
-            "Generate ONE concise interview question based on the provided context."
-        )
+        # Dynamic job context — no more hardcoding (resolved from session context)
+        job_title: str = context.get("job_title") or context.get("job_category") or "Software Engineer"
+        persona: str = context.get("persona") or "professional"
 
-        user_prompt = f"Job Category: Developer\nInterview Step: {step}\n"
+        # Persona-based system prompt
+        _persona_map = {
+            "professional": (
+                "You are a professional technical interviewer AI with a structured, formal approach. "
+                "Generate ONE concise interview question based on the provided context."
+            ),
+            "friendly": (
+                "You are a friendly and encouraging technical interviewer AI. "
+                "Generate ONE warm but professional interview question based on the provided context."
+            ),
+            "strict": (
+                "You are a rigorous and demanding technical interviewer AI who expects precise, detailed answers. "
+                "Generate ONE challenging interview question based on the provided context."
+            ),
+        }
+        system_prompt = _persona_map.get(persona, _persona_map["professional"])
+
+        user_prompt = f"Job Role: {job_title}\nInterview Step: {step}\n"
         if history:
             user_prompt += "\nPreviously asked questions (Do NOT repeat these):\n" + "\n".join(f"- {q}" for q in history)
 

@@ -37,6 +37,30 @@ class JobPolicy(BaseModel):
     # Result Exposure
     result_exposure: str = Field(default="AFTER_14_DAYS", description="Result exposure policy")
 
+    # ── Persona & Fixed Questions (AI Policy — Frozen at Publish) ──────────────
+    persona: Optional[str] = Field(
+        default="professional",
+        description="Interviewer persona: 'professional' | 'friendly' | 'strict'"
+    )
+    fixed_questions: Optional[List[str]] = Field(
+        default_factory=list,
+        description="Fixed questions always injected into the session (before LLM generation)"
+    )
+
+    # ── Wiring Flags (Feature On/Off — Frozen at Publish) ────────────────────
+    wiring_resume_q_enabled: bool = Field(
+        default=True,
+        description="Enable resume-based question generation"
+    )
+    wiring_rag_enabled: bool = Field(
+        default=True,
+        description="Enable RAG (question bank vector search) for question generation"
+    )
+    wiring_multimodal_enabled: bool = Field(
+        default=True,
+        description="Enable multimodal analysis (STT, emotion, gaze)"
+    )
+
     @validator("min_question_count")
     def validate_min_questions(cls, v):
         if v < 10:
