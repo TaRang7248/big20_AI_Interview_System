@@ -2,8 +2,9 @@ import sys
 from datetime import datetime
 
 # Adjust path to find packages
-sys.path.append("c:/big20/big20_AI_Interview_simulation/IMH/IMH_interview")
-sys.path.append("c:/big20/big20_AI_Interview_simulation/IMH/IMH_interview/packages")
+import os, sys
+sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), "packages"))
 
 from imh_job import Job, JobPolicy, JobStatus, JobStateError, PolicyValidationError
 from imh_session.policy import InterviewMode

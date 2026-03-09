@@ -11,7 +11,12 @@ from dotenv import load_dotenv
 # from IMH.IMH_no_api.IMH_no_api.db.base import Base
 # from IMH.IMH_no_api.IMH_no_api.models import user, auth_token, candidate_profile, interview, transcript, event_log, qa  # noqa: F401
 
-from IMH.IMH_with_api.models import Base
+# from IMH.IMH_with_api.models import Base
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# target_metadata = Base.metadata
+target_metadata = None
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -34,8 +39,6 @@ if not POSTGRES_CONNECTION_STRING:
 
 # alembic.ini의 sqlalchemy.url 값을 런타임에 덮어쓰기
 config.set_main_option("sqlalchemy.url", POSTGRES_CONNECTION_STRING)
-
-target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
