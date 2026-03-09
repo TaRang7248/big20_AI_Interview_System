@@ -1,6 +1,0 @@
-# 호환성/충돌 방지용 버전 핀 (pip install -c constraints.txt -r requirements.txt)
-numpy==1.26.2
-pyannote-audio==3.1.1
-
-# Windows + ffmpeg DLL 환경에서 torchcodec 충돌 가능성이 있어 사용하지 않음
-# torchcodec==<DO NOT INSTALL>

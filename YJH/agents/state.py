@@ -1,1 +1,0 @@
-# InterviewState 스키마 및 Pydantic 모델
