@@ -1,7 +1,7 @@
 # big20_AI_Interview_System
 빅데이터20기 Kingterview팀 파이널 프로젝트: **멀티모달 AI 모의면접 시스템**
 
-본 레포지토리는 기존 공용 레포지토리에서 `IMH_interview` 파트를 분리하여 독립적으로 구축한 전용 저장소입니다. 정량 평가, 근거 제시, 실시간 피드백이 가능한 수준 높은 AI 모의면접 솔루션을 지향합니다.
+본 레포지토리는 기존 공용 레포지토리에서 `AI_Interview_System` 파트를 분리하여 독립적으로 구축한 전용 저장소입니다. 정량 평가, 근거 제시, 실시간 피드백이 가능한 수준 높은 AI 모의면접 솔루션을 지향합니다.
 
 ---
 
@@ -13,7 +13,7 @@
   - **Architecture**: PostgreSQL(Source of Truth), Redis(Runtime/Cache), SSE(Real-time Projection)
 
 ## 📁 주요 폴더 구조
-- `IMH/`: 백엔드 API 서버 (FastAPI 기반)
+- `app/`: 백엔드 API 서버 (FastAPI 기반)
 - `frontend/`: React 기반 관리자 및 지원자 인터페이스
 - `packages/`: 핵심 비즈니스 로직 모듈 (imh_core, imh_session, imh_eval 등)
 - `scripts/`: DB 초기화, 시스템 검증 및 테스트 자동화 스크립트

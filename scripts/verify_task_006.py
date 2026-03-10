@@ -9,7 +9,7 @@ from pypdf import PdfWriter, PageObject
 # Add project root to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from IMH.main import app
+from app.main import app
 from packages.imh_core.logging import get_logger
 
 # Setup Logger

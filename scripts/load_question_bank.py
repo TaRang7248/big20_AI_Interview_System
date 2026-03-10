@@ -111,7 +111,7 @@ async def main():
         await create_table_if_not_exists(conn)
         
         # Determine path to data.json
-        # Project root is IMH_interview's parent
+        # Project root is AI_Interview_System's parent
         data_json_path = ROOT_DIR.parent.parent / "data" / "data.json"
         
         await load_data(conn, data_json_path)

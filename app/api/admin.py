@@ -2,8 +2,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
-from IMH.api.schemas import JobPostingResponse, AdminSessionSummary, SessionResponse
-from IMH.api.dependencies import get_admin_query_service
+from app.api.schemas import JobPostingResponse, AdminSessionSummary, SessionResponse
+from app.api.dependencies import get_admin_query_service
 from packages.imh_service.admin_query import AdminQueryService
 from packages.imh_stats.audit_timeline import AuditTimelineRepository
 from packages.imh_stats.aggregator import AggregateStatsRepository, GranularStatsCache

@@ -26,8 +26,8 @@ import asyncpg  # type: ignore
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Query
 from fastapi.responses import FileResponse
 
-from IMH.api.auth import require_user, require_admin
-from IMH.api.audit_log import write_audit_log, get_audit_logs_for_resource, VALID_REASON_CODES
+from app.api.auth import require_user, require_admin
+from app.api.audit_log import write_audit_log, get_audit_logs_for_resource, VALID_REASON_CODES
 
 logger = logging.getLogger("imh.resume")
 router = APIRouter(prefix="/resume", tags=["Resume"])

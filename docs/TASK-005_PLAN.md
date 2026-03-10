@@ -87,7 +87,7 @@
 
 ## 6. 로깅/관측성 설계
 
-`TASK-001` 인프라 활용 (`IMH.main.logger` or `get_logger`)
+`TASK-001` 인프라 활용 (`app.main.logger` or `get_logger`)
 - **INFO**: "STT Request: size={bytes} bytes, filename={uuid}, request_id={id}"
 - **INFO**: "STT Success: latency={ms}ms"
 - **ERROR**: "STT Failed: {error_code} - {message}" (Traceback은 `.log` 파일에만 기록)

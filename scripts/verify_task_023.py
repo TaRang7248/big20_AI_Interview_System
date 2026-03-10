@@ -9,8 +9,8 @@ sys.path.append(root_dir)
 sys.path.append(os.path.join(root_dir, "packages")) # Support direct package imports if lazy logic used
 
 from fastapi.testclient import TestClient
-from IMH.main import app
-from IMH.api.dependencies import get_job_posting_repository, get_concurrency_manager
+from app.main import app
+from app.api.dependencies import get_job_posting_repository, get_concurrency_manager
 from packages.imh_job.models import Job, JobPolicy, JobStatus
 
 client = TestClient(app)

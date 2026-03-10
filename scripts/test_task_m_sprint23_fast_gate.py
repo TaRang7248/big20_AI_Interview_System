@@ -33,7 +33,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 project_root = Path(__file__).resolve().parent.parent
-imh_root = project_root / "IMH" / "IMH_interview"
+imh_root = project_root / "IMH" / "AI_Interview_System"
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(imh_root))
 

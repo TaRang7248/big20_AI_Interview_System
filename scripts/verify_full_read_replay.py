@@ -23,7 +23,7 @@ if not os.getenv("POSTGRES_CONNECTION_STRING"):
 
 # Import dependencies
 try:
-    from IMH.api.dependencies import get_session_state_repository
+    from app.api.dependencies import get_session_state_repository
     from packages.imh_session.infrastructure.dual_repo import DualSessionStateRepository
     from packages.imh_session.infrastructure.memory_repo import MemorySessionRepository
 except ImportError as e:

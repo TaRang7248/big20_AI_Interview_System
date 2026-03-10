@@ -34,7 +34,7 @@ if not os.getenv("POSTGRES_CONNECTION_STRING"):
 
 # Import dependencies
 try:
-    from IMH.api.dependencies import get_session_service, get_job_posting_repository, get_config
+    from app.api.dependencies import get_session_service, get_job_posting_repository, get_config
     from packages.imh_job.models import Job, JobPolicy
     from packages.imh_job.enums import JobStatus
     from packages.imh_session.policy import InterviewMode

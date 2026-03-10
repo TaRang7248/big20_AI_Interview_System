@@ -9,7 +9,7 @@
 
 ### 2.1 오디오 데이터 로드 및 전처리
 1. **데이터 경로 정책**:
-   - 상대경로 기반 구현: 기본적으로 `IMH/IMH_interview/data/voice_test_collection` 경로를 참조합니다.
+   - 상대경로 기반 구현: 기본적으로 `IMH/AI_Interview_System/data/voice_test_collection` 경로를 참조합니다.
    - 실행 시 CLI 인자(argument)를 통해 경로 override(사용자 절대경로 등)를 지원합니다.
 2. **오디오 표준화 전략 (Audio Standardization)**: 
    - 원본 오디오 형식(wav, flac, mp3)을 유지한 채, 평가 로드 시점에 `16kHz, mono` 포맷으로 자동 리샘플링하여 전달합니다.
@@ -40,7 +40,7 @@
 
 ## 3. 구현 설계 구조 (Proposed Changes)
 
-프레임워크는 차후 Stage 3 Multimodal Interface STT 계층으로의 통합을 고려하여, 철저하게 인터페이스 기반으로 설계됩니다. 비즈니스 로직은 `IMH/IMH_interview/packages/imh_stt_benchmark/` 하위에 배치되며 실행 진입점은 `scripts/`에 위치합니다.
+프레임워크는 차후 Stage 3 Multimodal Interface STT 계층으로의 통합을 고려하여, 철저하게 인터페이스 기반으로 설계됩니다. 비즈니스 로직은 `IMH/AI_Interview_System/packages/imh_stt_benchmark/` 하위에 배치되며 실행 진입점은 `scripts/`에 위치합니다.
 
 ### `packages/imh_stt_benchmark/`
 

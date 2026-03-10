@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 # Add project root to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from IMH.main import app
+from app.main import app
 
 client = TestClient(app)
 

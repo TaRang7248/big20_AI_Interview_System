@@ -2,7 +2,7 @@
 from pathlib import Path as _Path
 from dotenv import load_dotenv as _load_dotenv
 for _candidate in [
-    _Path(__file__).parent.parent / ".env",              # IMH_interview/.env
+    _Path(__file__).parent.parent / ".env",              # AI_Interview_System/.env
     _Path(__file__).parent.parent.parent.parent / ".env", # project root .env
 ]:
     if _candidate.exists():
@@ -11,13 +11,13 @@ for _candidate in [
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from IMH.api.session import router as session_router
-from IMH.api.admin import router as admin_router
-from IMH.api.auth import router as auth_router
-from IMH.api.jobs import router as jobs_router
-from IMH.api.interviews import router as interviews_router
-from IMH.api.resume import router as resume_router
-from IMH.api.multimodal import router as multimodal_router
+from app.api.session import router as session_router
+from app.api.admin import router as admin_router
+from app.api.auth import router as auth_router
+from app.api.jobs import router as jobs_router
+from app.api.interviews import router as interviews_router
+from app.api.resume import router as resume_router
+from app.api.multimodal import router as multimodal_router
 
 
 def create_app() -> FastAPI:

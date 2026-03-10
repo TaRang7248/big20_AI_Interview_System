@@ -27,11 +27,11 @@ from packages.imh_core.dto import (
     VoiceResultDTO,
     VisualResultDTO
 )
-from IMH.api.dependencies import get_stt_provider, get_pdf_provider, get_embedding_provider, get_emotion_provider, get_voice_provider, get_visual_provider
+from app.api.dependencies import get_stt_provider, get_pdf_provider, get_embedding_provider, get_emotion_provider, get_voice_provider, get_visual_provider
 from packages.imh_providers.visual.mediapipe_impl import MediaPipeVisualProvider
 
 router = APIRouter()
-logger = get_logger("IMH.api.playground")
+logger = get_logger("app.api.playground")
 
 SUPPORTED_EXTENSIONS = {".wav", ".mp3", ".m4a", ".webm", ".mp4"}
 MAX_FILE_SIZE_MB = 100

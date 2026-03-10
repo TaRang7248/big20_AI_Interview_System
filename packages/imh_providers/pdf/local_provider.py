@@ -15,7 +15,7 @@ class LocalPDFProvider(IPDFProvider):
     """
     
     def __init__(self):
-        self.logger = get_logger("IMH.provider.pdf.local")
+        self.logger = get_logger("app.provider.pdf.local")
 
     def extract_text(self, file_path: str) -> PDFExtractionResultDTO:
         start_time = time.time()

@@ -22,8 +22,8 @@ from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
-from IMH.api.auth import require_admin, require_user, get_current_user_id
-from IMH.api.audit_log import write_audit_log
+from app.api.auth import require_admin, require_user, get_current_user_id
+from app.api.audit_log import write_audit_log
 
 logger = logging.getLogger("imh.jobs")
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -143,7 +143,7 @@ async def list_jobs(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ):
     """List jobs. Candidates see PUBLISHED only. Admins see ONLY their own jobs."""
-    from IMH.api.auth import _get_user_id_from_token, _user_type_store
+    from app.api.auth import _get_user_id_from_token, _user_type_store
     user_id = _get_user_id_from_token(
         credentials.credentials if credentials else None
     )

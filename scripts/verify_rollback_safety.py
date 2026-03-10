@@ -19,7 +19,7 @@ if not os.getenv("POSTGRES_CONNECTION_STRING"):
     sys.exit(0)
 
 try:
-    from IMH.api.dependencies import get_session_service, get_session_state_repository, get_job_posting_repository, get_config, get_canary_manager, get_postgres_session_state_repository
+    from app.api.dependencies import get_session_service, get_session_state_repository, get_job_posting_repository, get_config, get_canary_manager, get_postgres_session_state_repository
     from packages.imh_session.infrastructure.dual_repo import DualSessionStateRepository
     from packages.imh_job.models import Job, JobPolicy
     from packages.imh_job.enums import JobStatus

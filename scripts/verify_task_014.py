@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from fastapi.testclient import TestClient
 
-from IMH.main import app
+from app.main import app
 from packages.imh_report.dto import InterviewReport, ReportHeader, ReportDetail, ReportFooter
 from packages.imh_history.repository import FileHistoryRepository
 

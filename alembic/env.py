@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import pool
 from dotenv import load_dotenv
 
-# from IMH.IMH_no_api.IMH_no_api.db.base import Base
-# from IMH.IMH_no_api.IMH_no_api.models import user, auth_token, candidate_profile, interview, transcript, event_log, qa  # noqa: F401
+# from app.IMH_no_api.IMH_no_api.db.base import Base
+# from app.IMH_no_api.IMH_no_api.models import user, auth_token, candidate_profile, interview, transcript, event_log, qa  # noqa: F401
 
-# from IMH.IMH_with_api.models import Base
+# from app.IMH_with_api.models import Base
 
 # add your model's MetaData object here
 # for 'autogenerate' support

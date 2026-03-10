@@ -29,11 +29,11 @@ def setup_environment():
 
 setup_environment()
 
-from IMH_interview.packages.imh_stt_benchmark.runner import BenchmarkRunner
-from IMH_interview.packages.imh_stt_benchmark.domain import STTEngineProtocol, STTResultDTO
-from IMH_interview.packages.imh_stt_benchmark.adapters.faster_whisper_adapter import FasterWhisperAdapter
-from IMH_interview.packages.imh_stt_benchmark.adapters.sensevoice_adapter import SenseVoiceAdapter
-from IMH_interview.packages.imh_stt_benchmark.adapters.whisper_api_adapter import WhisperAPIAdapter
+from AI_Interview_System.packages.imh_stt_benchmark.runner import BenchmarkRunner
+from AI_Interview_System.packages.imh_stt_benchmark.domain import STTEngineProtocol, STTResultDTO
+from AI_Interview_System.packages.imh_stt_benchmark.adapters.faster_whisper_adapter import FasterWhisperAdapter
+from AI_Interview_System.packages.imh_stt_benchmark.adapters.sensevoice_adapter import SenseVoiceAdapter
+from AI_Interview_System.packages.imh_stt_benchmark.adapters.whisper_api_adapter import WhisperAPIAdapter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Optional
 
-from IMH.api.schemas import (
+from app.api.schemas import (
     SessionCreateRequest, 
     SessionResponse, 
     AnswerSubmitRequest, 
     QuestionSchema
 )
-from IMH.api.dependencies import get_session_service
+from app.api.dependencies import get_session_service
 from packages.imh_service.session_service import SessionService
 from packages.imh_dto.session import SessionResponseDTO, AnswerSubmissionDTO
 

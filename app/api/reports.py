@@ -6,7 +6,7 @@ from packages.imh_history.dto import HistoryMetadata
 from packages.imh_report.dto import InterviewReport
 from packages.imh_history.repository import HistoryRepository
 
-from IMH.api.dependencies import get_history_repository
+from app.api.dependencies import get_history_repository
 
 router = APIRouter()
 

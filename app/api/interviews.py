@@ -22,8 +22,8 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
-from IMH.api.auth import require_user
-from IMH.api.dependencies import get_session_service
+from app.api.auth import require_user
+from app.api.dependencies import get_session_service
 from packages.imh_service.session_service import SessionService
 from packages.imh_service.audit_wiring import AuditWiringService
 

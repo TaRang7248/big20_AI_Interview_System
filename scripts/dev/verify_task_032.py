@@ -9,7 +9,7 @@ import uuid
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from packages.imh_core.config import IMHConfig
-from IMH.api.dependencies import get_session_service
+from app.api.dependencies import get_session_service
 
 def verify_e2e_flow():
     print("--- TASK-032 Local Verification Start ---")

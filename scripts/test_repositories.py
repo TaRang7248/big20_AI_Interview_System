@@ -21,7 +21,7 @@ import logging
 # Setup paths
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / "IMH" / "IMH_interview"))
+sys.path.insert(0, str(project_root / "IMH" / "AI_Interview_System"))
 
 # Load environment
 env_path = project_root / ".env"

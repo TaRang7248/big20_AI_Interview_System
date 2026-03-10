@@ -21,7 +21,7 @@ if not os.getenv("POSTGRES_CONNECTION_STRING"):
 
 # Import dependencies
 try:
-    from IMH.api.dependencies import get_session_service, get_session_state_repository, get_job_posting_repository, get_config, get_canary_manager, get_postgres_session_state_repository
+    from app.api.dependencies import get_session_service, get_session_state_repository, get_job_posting_repository, get_config, get_canary_manager, get_postgres_session_state_repository
     from packages.imh_session.infrastructure.dual_repo import DualSessionStateRepository
     from packages.imh_session.infrastructure.memory_repo import MemorySessionRepository
     from packages.imh_session.infrastructure.postgresql_repo import PostgreSQLSessionRepository
@@ -168,7 +168,7 @@ def run_verification():
     # Because dependencies.py now caches MemoryRepo for Hot Swap safety,
     # we must manually clear it to simulate a crash/restart.
     try:
-        from IMH.api.dependencies import get_memory_session_state_repository
+        from app.api.dependencies import get_memory_session_state_repository
         get_memory_session_state_repository.cache_clear()
     except ImportError:
          print("Warning: Could not import get_memory_session_state_repository for clearing")

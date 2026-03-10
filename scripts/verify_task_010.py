@@ -56,8 +56,8 @@ def verify():
     # Test 2: Check DTO Import in API
     logger.info("Test 2: Verifying API module imports...")
     try:
-        from IMH.api.playground import router
-        logger.info("Test 2 PASSED: IMH.api.playground imported successfully.")
+        from app.api.playground import router
+        logger.info("Test 2 PASSED: app.api.playground imported successfully.")
     except Exception as e:
         logger.error(f"Test 2 FAILED: Could not import API router. {e}")
         sys.exit(1)
